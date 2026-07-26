@@ -45,7 +45,8 @@ Senior Software Engineer – Copilot Integration assignment (ABB).
 ├── rag/
 │   ├── ingestion/
 │   ├── retrieval/
-│   ├── documents/                 # markdown corpus + metadata.json
+│   ├── documents/                 # markdown sources (optional editing)
+│   ├── documents-pdf/             # PDF corpus + metadata.json (used for RAG)
 │   ├── documents-pdf/             # PDF corpus for PDF extraction demos
 │   └── tests/
 ├── connectors/                    # Alarm API HTTP client, etc.
@@ -70,22 +71,23 @@ Assignment brief files are also kept in this folder for reference:
 
 ## MCP server
 
-Location: `mcp-servers/alarm-management/` (to be implemented in Step 4).
+Location: `mcp-servers/alarm-management/`
 
-Planned tools:
+**Implemented tools** (Step 4):
 
-1. `search_assets`
-2. `get_asset_metadata`
-3. `get_alarms`
-4. `correlate_alarms`
-5. `calculate_alarm_priority`
-6. `get_operator_recommendations`
+1. `search_assets` - Find assets by name or ID
+2. `get_asset_metadata` - Get detailed asset information
+3. `get_alarms` - List alarms with filters
+4. `get_recent_critical_alarms` - Quick access to high/critical alarms
+5. `correlate_alarms` - Find patterns across assets
+6. `calculate_alarm_priority` - Get priority score
+7. `get_operator_recommendations` - Get recommended actions
 
 ## RAG corpus
 
-- Markdown: `rag/documents/`
-- PDF: `rag/documents-pdf/`
-- Metadata: `rag/documents/metadata.json`
+- PDF (used for RAG): `rag/documents-pdf/`
+- Metadata: `rag/documents-pdf/metadata.json`
+- Markdown sources (optional): `rag/documents/`
 
 Ingestion and retrieval code will live under `rag/ingestion/` and `rag/retrieval/`.
 
@@ -156,10 +158,11 @@ See `docs/known-limitations.md` (updated as implementation progresses).
 - [x] Step 1: Alarm API simulator running
 - [x] Step 2: ABB repository skeleton + docs placeholders
 - [x] Step 3: Alarm API connector/client
-- [ ] Step 4: MCP server
-- [ ] Step 5: MCP client integration
-- [ ] Step 6: RAG ingestion/retrieval
-- [ ] Step 7: Combined orchestrator
-- [ ] Step 8: GUI
-- [ ] Step 9: Tests + CI
-- [ ] Step 10: Packaging, demo video, submission
+- [x] Step 4: MCP server (tools)
+- [x] Step 5a: RAG stack (LangChain + OpenAI + Chroma)
+- [x] Step 5b–5g: LangChain load → chunk → embed → Chroma index
+- [x] Step 5h–5n: filters, citations, grounded answers, injection tests
+- [x] Step 6: Copilot backend (MCP client + LangGraph agent)
+- [ ] Step 7: GUI
+- [ ] Step 8: Tests + CI
+- [ ] Step 9: Packaging, demo video, submission

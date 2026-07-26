@@ -1,12 +1,14 @@
-.PHONY: help env simulator-up simulator-down test lint format
+.PHONY: help env simulator-up simulator-down test ingest retrieve investigate
 
 help:
 	@echo "Targets:"
 	@echo "  make env             Copy .env.example to .env if missing"
 	@echo "  make simulator-up    Start Alarm API simulator container"
 	@echo "  make simulator-down  Stop Alarm API simulator container"
-	@echo "  make test            Run tests (filled in later steps)"
-	@echo "  make lint            Run lint (filled in later steps)"
+	@echo "  make ingest          Build RAG index (load→chunk→embed→Chroma)"
+	@echo "  make retrieve        RAG grounded answer for a sample question"
+	@echo "  make investigate     Full MCP+RAG copilot investigation"
+	@echo "  make test            Run unit + integration tests"
 
 env:
 	@test -f .env || cp .env.example .env
@@ -24,17 +26,26 @@ simulator-up:
 simulator-down:
 	-docker stop alarm-api-simulator
 
-smoke-alarm-api:
-	PYTHONPATH=. python scripts/smoke_alarm_api_client.py
+ingest:
+	PYTHONPATH=. python3 -m rag.ingestion.pipeline
+
+retrieve:
+	PYTHONPATH=. python3 -m rag.retrieval.grounded
+
+investigate:
+	PYTHONPATH=. python3 -m apps.backend
+
+test-mcp-tools:
+	PYTHONPATH=. python3 scripts/test_mcp_tools.py
 
 test:
-	PYTHONPATH=. python -m pytest tests/unit tests/integration
+	PYTHONPATH=. python3 -m pytest tests/unit tests/integration
 
 test-unit:
-	PYTHONPATH=. python -m pytest tests/unit
+	PYTHONPATH=. python3 -m pytest tests/unit
 
 test-integration:
-	PYTHONPATH=. python -m pytest tests/integration
+	PYTHONPATH=. python3 -m pytest tests/integration
 
 lint:
 	@echo "Lint not wired yet (Step 9)."

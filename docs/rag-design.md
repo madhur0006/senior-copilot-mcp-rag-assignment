@@ -1,53 +1,46 @@
-# RAG Design
+# RAG Design — LangChain + OpenAI + Chroma (Steps 5h–5n)
 
-## Source document types
+## Stack (locked)
 
-- Operating procedures
-- Maintenance manuals
-- Troubleshooting guides
-- Safety instructions
-- Alarm philosophy
-- Service knowledge articles
+| Piece | Choice |
+|-------|--------|
+| Load PDF | LangChain `PyMuPDFLoader` |
+| Metadata | `rag/documents-pdf/metadata.json` joined onto each Document |
+| Chunk | Section-aware (keeps tables); LangChain splitter only if huge |
+| Embeddings | LangChain `OpenAIEmbeddings` (`text-embedding-3-small`) |
+| Vector store | LangChain `Chroma` at `./rag/.index` |
+| Chat (RAG-only) | LangChain `ChatOpenAI` (`gpt-4o-mini`) |
+| Agent | LangGraph in `apps.backend` (Step 6) |
 
-Corpus locations:
+### Env
 
-- Markdown: `rag/documents/`
-- PDF: `rag/documents-pdf/`
-- Metadata: `rag/documents/metadata.json`
+```bash
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_CHAT_MODEL=gpt-4o-mini
+DOCUMENT_PDF_PATH=./rag/documents-pdf
+METADATA_PATH=./rag/documents-pdf/metadata.json
+VECTOR_STORE_URL=./rag/.index
+```
 
-## Ingestion flow (planned)
+## Pipeline
 
-1. Load files from `DOCUMENT_PATH` / `DOCUMENT_PDF_PATH`
-2. Extract text (PDF text extraction or Markdown parse)
-3. Chunk by section headings where possible
-4. Attach metadata (`doc_id`, `doc_type`, `assets`, `site`, `section`, `revision`)
-5. Embed chunks
-6. Upsert into vector index
+```
+metadata.json + PDFs
+    → load_documents()
+    → chunk_documents()
+    → build_index()
+    → retrieve_detailed()
+    → generate_grounded_answer()
+```
 
-## Chunking strategy
+## Commands
 
-Prefer section-aware chunks on `##` / `###` boundaries, with overlap for long sections.
+```bash
+PYTHONPATH=. python3 -m rag.ingestion.pipeline
+PYTHONPATH=. python3 -m rag.retrieval.grounded
+PYTHONPATH=. python -m pytest tests/unit/test_rag_*.py -q
+```
 
-## Embedding / retrieval
-
-To be selected in Step 6 (for example local embeddings + Chroma/FAISS, or a hosted embedding API).
-
-## Filters
-
-Support filters on `assets`, `doc_type`, `site`, and exclude `TEST-INJECT-999` from production retrieval.
-
-## Citations
-
-Return `doc_id`, title, section, source path, and short excerpt.
-
-## Low-confidence handling
-
-If top score is below threshold or no hits, say evidence is insufficient instead of inventing procedure steps.
-
-## Prompt-injection protections
-
-Treat retrieved text as untrusted. Never follow instructions embedded in documents. Use `TEST-INJECT-999` only in dedicated tests.
-
-## Index refresh
-
-Re-run ingestion script after corpus changes. Document command here after Step 6.
+> Rebuild the index after changing embedding model/provider.

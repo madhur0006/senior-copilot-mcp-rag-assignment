@@ -37,10 +37,10 @@ Code lives in `connectors/alarm_api/`:
 - `client.py` — `AlarmApiClient` with auth, retries, trace headers, convenience methods
 - `errors.py` — mapped errors (`AlarmApiAuthError`, timeout, validation, not found)
 
-Smoke check:
+Live check (Alarm API simulator running):
 
 ```bash
-python scripts/smoke_alarm_api_client.py
+PYTHONPATH=. python3 -c "from connectors.alarm_api import AlarmApiClient; print(AlarmApiClient().health())"
 ```
 
 Unit + live tests:
