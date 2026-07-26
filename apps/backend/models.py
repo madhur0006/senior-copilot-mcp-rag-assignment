@@ -24,6 +24,7 @@ class InvestigationResult:
     answer: str
     tool_trace: list[ToolTraceItem] = field(default_factory=list)
     citations: list[dict] = field(default_factory=list)
+    alarms: list[dict] = field(default_factory=list)
     mcp_tools_discovered: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -32,5 +33,6 @@ class InvestigationResult:
             "answer": self.answer,
             "tool_trace": [t.to_dict() for t in self.tool_trace],
             "citations": self.citations,
+            "alarms": self.alarms,
             "mcp_tools_discovered": self.mcp_tools_discovered,
         }

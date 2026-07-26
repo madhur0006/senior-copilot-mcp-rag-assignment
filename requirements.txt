@@ -13,6 +13,7 @@ fastmcp>=0.3.0
 
 # Copilot orchestration
 langgraph>=0.2.0
+streamlit>=1.32.0
 
 # LangChain RAG pipeline
 langchain>=0.3.0

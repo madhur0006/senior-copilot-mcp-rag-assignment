@@ -163,6 +163,6 @@ See `docs/known-limitations.md` (updated as implementation progresses).
 - [x] Step 5b–5g: LangChain load → chunk → embed → Chroma index
 - [x] Step 5h–5n: filters, citations, grounded answers, injection tests
 - [x] Step 6: Copilot backend (MCP client + LangGraph agent)
-- [ ] Step 7: GUI
+- [x] Step 7: GUI (Streamlit)
 - [ ] Step 8: Tests + CI
 - [ ] Step 9: Packaging, demo video, submission

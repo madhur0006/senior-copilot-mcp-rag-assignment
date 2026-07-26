@@ -36,7 +36,12 @@ def test_extract_trace_and_citations():
                     "id": "1",
                     "name": "search_procedures",
                     "args": {"query": "bfp"},
-                }
+                },
+                {
+                    "id": "2",
+                    "name": "get_recent_critical_alarms",
+                    "args": {"asset_id": "AST00001", "days": 90},
+                },
             ],
         ),
         ToolMessage(
@@ -44,11 +49,17 @@ def test_extract_trace_and_citations():
             tool_call_id="1",
             name="search_procedures",
         ),
+        ToolMessage(
+            content='{"data":[{"alarm_id":"ALM1","severity":"high","alarm_message":"vib"}]}',
+            tool_call_id="2",
+            name="get_recent_critical_alarms",
+        ),
         AIMessage(content="Final answer citing OP-BFP-001."),
     ]
-    trace, citations = _extract_trace(messages)
+    trace, citations, alarms = _extract_trace(messages)
     assert trace[0].tool == "search_procedures"
     assert citations[0]["doc_id"] == "OP-BFP-001"
+    assert alarms[0]["alarm_id"] == "ALM1"
     assert _final_answer(messages).startswith("Final answer")
 
 

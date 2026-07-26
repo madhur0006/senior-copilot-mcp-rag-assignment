@@ -13,18 +13,39 @@ from apps.backend.mcp_client import list_mcp_tools
 from apps.backend.models import InvestigationResult, ToolTraceItem
 from rag.ingestion.config import RagConfig
 
+ALARM_TOOLS = {"get_alarms", "get_recent_critical_alarms"}
 
-def _preview(value: Any, limit: int = 500) -> str:
+
+def _preview(value: Any, limit: int = 800) -> str:
     text = value if isinstance(value, str) else json.dumps(value, default=str)
     text = text.replace("\n", " ")
     return text[:limit] + ("..." if len(text) > limit else "")
 
 
-def _extract_trace(messages: list) -> tuple[list[ToolTraceItem], list[dict]]:
-    """Build a tool trace and collect RAG citations from full tool messages."""
+def _alarm_rows_from_payload(data: Any) -> list[dict]:
+    if not isinstance(data, dict):
+        return []
+    items = (
+        data.get("data")
+        or data.get("items")
+        or data.get("alarms")
+        or data.get("results")
+        or []
+    )
+    if not isinstance(items, list):
+        return []
+    return [row for row in items if isinstance(row, dict)]
+
+
+def _extract_trace(
+    messages: list,
+) -> tuple[list[ToolTraceItem], list[dict], list[dict]]:
+    """Build tool trace, RAG citations, and alarm rows from full tool messages."""
     pending_calls: dict[str, ToolTraceItem] = {}
     trace: list[ToolTraceItem] = []
     citations: list[dict] = []
+    alarms: list[dict] = []
+    seen_alarm_ids: set[str] = set()
 
     for msg in messages:
         if isinstance(msg, AIMessage) and getattr(msg, "tool_calls", None):
@@ -45,12 +66,14 @@ def _extract_trace(messages: list) -> tuple[list[ToolTraceItem], list[dict]]:
             if isinstance(content, list):
                 content = json.dumps(content, default=str)
             content_str = str(content)
-            preview = _preview(content_str)
+            tool_name = getattr(msg, "name", None) or (item.tool if item else "tool")
+            # Keep more text for alarm payloads so the GUI can show them
+            limit = 4000 if tool_name in ALARM_TOOLS else 800
+            preview = _preview(content_str, limit=limit)
             ok = not (
                 '"error": true' in content_str.lower()
                 or content_str.strip().startswith("Error")
             )
-            tool_name = getattr(msg, "name", None) or (item.tool if item else "tool")
 
             if item is None:
                 item = ToolTraceItem(tool=tool_name, result_preview=preview, ok=ok)
@@ -59,16 +82,26 @@ def _extract_trace(messages: list) -> tuple[list[ToolTraceItem], list[dict]]:
                 item.result_preview = preview
                 item.ok = ok
 
-            if tool_name == "search_procedures":
-                try:
-                    data = json.loads(content_str)
-                    for cite in data.get("citations") or []:
-                        if cite not in citations:
-                            citations.append(cite)
-                except Exception:
-                    pass
+            try:
+                data = json.loads(content_str)
+            except Exception:
+                data = None
 
-    return trace, citations
+            if tool_name == "search_procedures" and isinstance(data, dict):
+                for cite in data.get("citations") or []:
+                    if cite not in citations:
+                        citations.append(cite)
+
+            if tool_name in ALARM_TOOLS and data is not None:
+                for row in _alarm_rows_from_payload(data):
+                    aid = str(row.get("alarm_id") or row.get("id") or "")
+                    if aid and aid in seen_alarm_ids:
+                        continue
+                    if aid:
+                        seen_alarm_ids.add(aid)
+                    alarms.append(row)
+
+    return trace, citations, alarms
 
 
 def _final_answer(messages: list) -> str:
@@ -106,15 +139,20 @@ def run_investigation(
             discovered = [f"(discovery failed: {exc})"]
 
     agent = build_agent(config)
-    result = agent.invoke({"messages": [HumanMessage(content=query)]})
+    # Cap tool-loop depth so a chatty run cannot explode context
+    result = agent.invoke(
+        {"messages": [HumanMessage(content=query)]},
+        config={"recursion_limit": 18},
+    )
     messages = result.get("messages") or []
 
-    trace, citations = _extract_trace(messages)
+    trace, citations, alarms = _extract_trace(messages)
 
     return InvestigationResult(
         query=query,
         answer=_final_answer(messages),
         tool_trace=trace,
         citations=citations,
+        alarms=alarms,
         mcp_tools_discovered=discovered,
     )

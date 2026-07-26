@@ -2,9 +2,14 @@
 LangChain + Chroma vector index.
 
 Build / open the local Chroma store under VECTOR_STORE_URL.
+
+Uses an explicit chromadb.PersistentClient so LangChain does not fall back
+to HttpClient(localhost:8000) — that port is the Alarm API simulator and
+causes: "Could not connect to tenant default_tenant".
 """
 from pathlib import Path
 
+import chromadb
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 
@@ -14,6 +19,22 @@ from rag.ingestion.embeddings import get_embeddings
 COLLECTION_NAME = "alarm_rag"
 
 
+def _clear_chroma_system_cache() -> None:
+    """Avoid SharedSystemClient conflicts across Streamlit reruns."""
+    try:
+        from chromadb.api.client import SharedSystemClient
+
+        SharedSystemClient.clear_system_cache()
+    except Exception:
+        pass
+
+
+def _persistent_client(index_dir: Path) -> chromadb.PersistentClient:
+    index_dir.mkdir(parents=True, exist_ok=True)
+    _clear_chroma_system_cache()
+    return chromadb.PersistentClient(path=str(index_dir))
+
+
 def get_vectorstore(config: RagConfig = None, embeddings=None) -> Chroma:
     """Open (or create) the persistent Chroma collection."""
     if config is None:
@@ -21,12 +42,11 @@ def get_vectorstore(config: RagConfig = None, embeddings=None) -> Chroma:
     if embeddings is None:
         embeddings = get_embeddings(config)
 
-    config.index_dir.mkdir(parents=True, exist_ok=True)
-
+    client = _persistent_client(config.index_dir)
     return Chroma(
+        client=client,
         collection_name=COLLECTION_NAME,
         embedding_function=embeddings,
-        persist_directory=str(config.index_dir),
     )
 
 
@@ -46,18 +66,18 @@ def build_index(
     embeddings = get_embeddings(config)
 
     if reset:
+        _clear_chroma_system_cache()
         _clear_index_dir(config.index_dir)
-
-    config.index_dir.mkdir(parents=True, exist_ok=True)
 
     if not chunks:
         return get_vectorstore(config=config, embeddings=embeddings)
 
+    client = _persistent_client(config.index_dir)
     return Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
         collection_name=COLLECTION_NAME,
-        persist_directory=str(config.index_dir),
+        client=client,
     )
 
 
