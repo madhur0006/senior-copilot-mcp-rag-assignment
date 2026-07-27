@@ -1,11 +1,4 @@
-"""
-LangChain tools for the copilot.
-
-- Alarm tools go through the MCP client (same catalog as mcp-servers/alarm-management)
-- RAG tool uses retrieve_detailed (local Chroma index)
-
-Tool outputs are compacted so LangGraph message history stays under model context limits.
-"""
+"""LangChain tools: MCP alarm APIs + local RAG. Outputs are compacted for context limits."""
 from __future__ import annotations
 
 import json
@@ -16,7 +9,7 @@ from langchain_core.tools import tool
 from apps.backend.mcp_client import call_mcp_tool
 from rag.retrieval.retriever import retrieve_detailed
 
-# Keep tool messages small — full alarm dumps overflow gpt-4o-mini context
+# Cap tool JSON size to stay under model context limits
 _MAX_TOOL_CHARS = 6000
 _ALARM_KEYS = (
     "alarm_id",
@@ -152,13 +145,10 @@ def search_procedures(
     k: int = 3,
 ) -> str:
     """
-    Retrieve relevant operating procedures / manuals / guides from the RAG index.
+    Retrieve operating procedures / manuals / guides from the RAG index.
     Returns excerpts with doc_id, section, source_path, and distance scores.
-
-    Tips:
-    - Prefer symptom-specific queries (e.g. 'motor trip restart criteria').
-    - Use equipment names for asset (e.g. 'Motor M-501'), NEVER Alarm API ids like AST00001.
-    - If the user names a document (e.g. OP-MTR-003), set doc_id to that value.
+    Prefer symptom-specific queries. Use equipment names for asset (e.g. 'Motor M-501'),
+    never Alarm API ids like AST00001. Set doc_id when the user names a document.
     """
 
     def _run(filters: dict | None):
@@ -190,14 +180,13 @@ def search_procedures(
     if doc_type:
         filters["doc_type"] = doc_type
 
-    # Alarm API asset ids (AST00001) are NOT in document metadata — skip them
+    # AST* ids are Alarm API ids, not document metadata
     asset_clean = (asset or "").strip()
     if asset_clean and not re.fullmatch(r"AST\d+", asset_clean, flags=re.I):
         filters["asset"] = asset_clean
 
     result, docs, citations = _run(filters or None)
 
-    # Retry without asset/site if nothing useful (common when agent passes AST ids)
     if not docs:
         loose = {}
         if doc_id:

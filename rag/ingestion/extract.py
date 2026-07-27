@@ -1,7 +1,4 @@
-"""
-Kept for compatibility. Text extraction is now done by LangChain PyMuPDFLoader
-inside rag.ingestion.loader.load_documents.
-"""
+"""Compatibility helper — prefer rag.ingestion.loader.load_documents for ingestion."""
 
 
 def extract_text_from_pdf(pdf_file: str) -> str:

@@ -2,64 +2,58 @@
 
 ## Source system
 
-Alarm Management API Simulator provided in `alarm-management-api-simulator/`.
+Alarm Management API Simulator in `alarm-management-api-simulator/`.
 
-- Base URL (local): `http://localhost:8000`
-- Auth: `Authorization: Bearer demo-token` when `AUTH_ENABLED=true`
-- Docs: `http://localhost:8000/docs`
-- OpenAPI: `http://localhost:8000/openapi.json`
+| Item | Value |
+|---|---|
+| Base URL (local) | `http://localhost:8000` |
+| Auth | `Authorization: Bearer demo-token` when `AUTH_ENABLED=true` |
+| Swagger | http://localhost:8000/docs |
+| OpenAPI | http://localhost:8000/openapi.json |
 
-## Important rule (ABB)
+## Boundary rule
 
 The **copilot orchestration layer must not call the Alarm API directly**.  
-Only the MCP server (via connectors) talks to the Alarm API.
+Only the MCP server (via `connectors/alarm_api`) talks to the Alarm API.  
+The agent invokes MCP tools through `apps/backend/mcp_client.py`.
 
-## Key operations used by this use case
+## Operations used
 
-| Capability | Method / path |
-|---|---|
-| Health | `GET /health` |
-| Asset search | `GET /assets/search` |
-| Asset metadata | `GET /assets/{asset_id}/metadata` |
-| Alarms | `GET /alarms` |
-| Alarm by ID | `GET /alarms/{alarm_id}` |
-| Summary | `POST /alarms/summary` |
-| Trends | `POST /alarms/trends` |
-| Correlation | `POST /alarms/correlation` |
-| Priority score | `POST /alarms/priority-score` |
-| Operator recommendations | `POST /recommendations/operator-actions` |
+| Capability | Method / path | MCP tool |
+|---|---|---|
+| Health | `GET /health` | (connector smoke) |
+| Asset search | `GET /assets/search` | `search_assets` |
+| Asset metadata | `GET /assets/{asset_id}/metadata` | `get_asset_metadata` |
+| Alarms | `GET /alarms` | `get_alarms`, `get_recent_critical_alarms` |
+| Correlation | `POST /alarms/correlation` | `correlate_alarms` |
+| Priority score | `POST /alarms/priority-score` | `calculate_alarm_priority` |
+| Operator recommendations | `POST /recommendations/operator-actions` | `get_operator_recommendations` |
 
-## Connector implementation (Step 3)
+## Connector
 
-Code lives in `connectors/alarm_api/`:
+Code: `connectors/alarm_api/`
 
-- `config.py` — reads `.env` (`ALARM_API_BASE_URL`, `ALARM_API_TOKEN`, timeouts, retries)
-- `client.py` — `AlarmApiClient` with auth, retries, trace headers, convenience methods
-- `errors.py` — mapped errors (`AlarmApiAuthError`, timeout, validation, not found)
+- `config.py` — `.env` (`ALARM_API_BASE_URL`, `ALARM_API_TOKEN`, timeout, retries)
+- `client.py` — `AlarmApiClient` with auth, retries, trace headers
+- `errors.py` — `AlarmApiAuthError`, timeout, validation, not-found
 
-Live check (Alarm API simulator running):
+Live check:
 
 ```bash
 PYTHONPATH=. python3 -c "from connectors.alarm_api import AlarmApiClient; print(AlarmApiClient().health())"
 ```
 
-Unit + live tests:
-
-```bash
-python -m pytest tests/unit tests/integration
-```
-
 ## Cross-cutting concerns
 
-- Timeout and retry in connector
-- Pagination for alarm lists
-- Trace headers (`trace_id` / `trace-id`, `x-client-id`, `x-metadata-tag`) where supported
-- Map HTTP errors into clear connector/MCP errors
-- Never log the raw bearer token
+- Timeout and retry in the connector
+- Pagination for alarm lists (`page`, `page_size`)
+- Trace headers (`trace_id`, client id, metadata tag) where supported
+- HTTP errors mapped to clear connector/MCP errors
+- Bearer token never logged or returned in GUI traces
 
-## Local Apple Silicon note
+## Local Apple Silicon
 
-Supplied image is `linux/amd64`. On arm64 Macs with Rancher Desktop, run with:
+Supplied image is `linux/amd64`. On arm64 Macs:
 
 ```bash
 docker run -d --name alarm-api-simulator --platform linux/amd64 \
@@ -67,4 +61,4 @@ docker run -d --name alarm-api-simulator --platform linux/amd64 \
   alarm-api-simulator-alarm-api-simulator:latest
 ```
 
-Rosetta/VzRosetta should be enabled if QEMU segfaults occur.
+Or: `make simulator-up`

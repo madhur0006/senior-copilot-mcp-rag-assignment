@@ -1,4 +1,4 @@
-.PHONY: help env simulator-up simulator-down test ingest retrieve investigate
+.PHONY: help env simulator-up simulator-down test test-unit test-e2e coverage ingest retrieve investigate
 
 help:
 	@echo "Targets:"
@@ -8,7 +8,10 @@ help:
 	@echo "  make ingest          Build RAG index (load→chunk→embed→Chroma)"
 	@echo "  make retrieve        RAG grounded answer for a sample question"
 	@echo "  make investigate     Full MCP+RAG copilot investigation"
-	@echo "  make test            Run unit + integration tests"
+	@echo "  make test            Unit + integration + e2e (live tests skip if unavailable)"
+	@echo "  make test-unit       Unit tests only"
+	@echo "  make test-e2e        End-to-end MCP+RAG tests"
+	@echo "  make coverage        Unit + mocked e2e with HTML/XML coverage reports"
 
 env:
 	@test -f .env || cp .env.example .env
@@ -39,7 +42,7 @@ test-mcp-tools:
 	PYTHONPATH=. python3 scripts/test_mcp_tools.py
 
 test:
-	PYTHONPATH=. python3 -m pytest tests/unit tests/integration
+	PYTHONPATH=. python3 -m pytest tests/unit tests/integration tests/e2e
 
 test-unit:
 	PYTHONPATH=. python3 -m pytest tests/unit
@@ -47,5 +50,22 @@ test-unit:
 test-integration:
 	PYTHONPATH=. python3 -m pytest tests/integration
 
+test-e2e:
+	PYTHONPATH=. python3 -m pytest tests/e2e
+
+coverage:
+	PYTHONPATH=. python3 -m pytest \
+	  tests/unit \
+	  tests/e2e/test_investigation_mcp_rag.py::test_e2e_investigation_combines_mcp_and_rag_mocked \
+	  --cov=apps \
+	  --cov=connectors \
+	  --cov=rag \
+	  --cov-config=.coveragerc \
+	  --cov-report=term-missing \
+	  --cov-report=xml:coverage/coverage.xml \
+	  --cov-report=html:coverage/html
+	@echo "HTML report: coverage/html/index.html"
+	@echo "XML report:  coverage/coverage.xml"
+
 lint:
-	@echo "Lint not wired yet (Step 9)."
+	@echo "Lint not wired yet."

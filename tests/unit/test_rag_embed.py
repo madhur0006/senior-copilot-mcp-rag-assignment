@@ -1,4 +1,4 @@
-"""Unit tests for OpenAI embeddings factory (mocked)."""
+"""OpenAI embeddings factory tests."""
 from unittest.mock import MagicMock, patch
 
 import pytest

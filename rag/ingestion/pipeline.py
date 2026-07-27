@@ -1,17 +1,11 @@
 """
-Full LangChain RAG ingestion pipeline (OpenAI + Chroma):
+Full RAG ingestion: load PDFs + metadata → chunk → embed → Chroma index.
 
-  metadata.json + PDFs
-       → load_documents()   # PyMuPDF text extract + metadata
-       → chunk_documents()  # section-aware chunks
-       → build_index()      # OpenAI embeddings → Chroma ./rag/.index
-
-Run once (rebuilds index):
   PYTHONPATH=. python3 -m rag.ingestion.pipeline
 """
 from rag.ingestion.chunker import chunk_documents
 from rag.ingestion.config import RagConfig
-from rag.ingestion.index import build_index, get_vectorstore
+from rag.ingestion.index import build_index
 from rag.ingestion.loader import load_documents
 
 
@@ -20,9 +14,7 @@ def run_ingestion(
     include_test_inject: bool = False,
     reset: bool = True,
 ):
-    """
-    Run the full ingest pipeline and return (chunks, vectorstore).
-    """
+    """Run the full ingest pipeline and return (chunks, vectorstore)."""
     if config is None:
         config = RagConfig()
 

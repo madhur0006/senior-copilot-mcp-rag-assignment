@@ -205,7 +205,6 @@ def md_to_pdf(md_path: Path, pdf_path: Path) -> None:
             i += 1
             continue
 
-        # paragraph: gather continued plain lines
         para = [strip_md_inline(stripped)]
         i += 1
         while i < len(lines):

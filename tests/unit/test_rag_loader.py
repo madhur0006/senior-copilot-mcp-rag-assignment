@@ -1,4 +1,4 @@
-"""Unit tests for LangChain PDF loader."""
+"""PDF loader unit tests."""
 from pathlib import Path
 
 import pytest

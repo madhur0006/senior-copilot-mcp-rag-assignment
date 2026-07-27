@@ -1,4 +1,4 @@
-"""Unit tests for citations + retrieval (Steps 5h–5k)."""
+"""Citation and retrieval unit tests."""
 from unittest.mock import MagicMock, patch
 
 from langchain_core.documents import Document

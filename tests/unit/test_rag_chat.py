@@ -1,4 +1,4 @@
-"""Unit tests for OpenAI chat invoke."""
+"""OpenAI chat invoke tests."""
 from unittest.mock import MagicMock
 
 import pytest

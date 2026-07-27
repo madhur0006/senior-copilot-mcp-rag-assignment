@@ -1,4 +1,4 @@
-"""Unit tests for PyMuPDF text extract helper."""
+"""PDF text extract helper tests."""
 from pathlib import Path
 
 from rag.ingestion.extract import extract_text_from_pdf

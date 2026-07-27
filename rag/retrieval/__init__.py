@@ -1,4 +1,4 @@
-"""RAG retrieval package — search, citations, grounded answers (Steps 5h–5m)."""
+"""RAG retrieval — search, citations, grounded answers."""
 
 from rag.retrieval.citations import Citation, citations_from_hits, document_to_citation
 from rag.retrieval.grounded import GroundedAnswer, generate_grounded_answer

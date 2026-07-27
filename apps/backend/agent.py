@@ -1,17 +1,9 @@
-"""
-LangGraph ReAct agent for alarm investigation (MCP + RAG).
-
-Explicit graph (easier to read / explain in interviews):
-
-  START → agent → (tools_condition)
-                    ├─ has tool calls → tools → agent (loop)
-                    └─ no tool calls  → END
-"""
+"""LangGraph ReAct agent for alarm investigation (MCP + RAG)."""
 from __future__ import annotations
 
 from langchain_core.messages import SystemMessage
 from langchain_openai import ChatOpenAI
-from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from apps.backend.tools import COPILOT_TOOLS
@@ -53,14 +45,7 @@ Rules:
 
 
 def build_agent(config: RagConfig = None):
-    """
-    Build and compile an explicit LangGraph ReAct agent.
-
-    - llm.bind_tools(COPILOT_TOOLS) exposes MCP + RAG tools to the model
-    - "agent" node: model decides next action / final answer
-    - "tools" node: ToolNode runs the requested tools
-    - edges loop until the model responds without tool calls
-    """
+    """Build and compile the LangGraph ReAct agent."""
     if config is None:
         config = RagConfig()
 
@@ -69,30 +54,19 @@ def build_agent(config: RagConfig = None):
         api_key=config.openai_key,
         temperature=0.2,
     )
-    # Bind tool schemas so the model can emit tool_calls
     llm_with_tools = llm.bind_tools(COPILOT_TOOLS)
 
     def agent_node(state: MessagesState) -> dict:
-        """Call the LLM with conversation history (+ system prompt once)."""
         messages = state["messages"]
         if not messages or not isinstance(messages[0], SystemMessage):
             messages = [SystemMessage(content=SYSTEM_PROMPT), *messages]
         response = llm_with_tools.invoke(messages)
         return {"messages": [response]}
 
-    # Tool runner for all COPILOT_TOOLS (MCP wrappers + search_procedures)
-    tools_node = ToolNode(COPILOT_TOOLS)
-
     graph = StateGraph(MessagesState)
     graph.add_node("agent", agent_node)
-    graph.add_node("tools", tools_node)
-
+    graph.add_node("tools", ToolNode(COPILOT_TOOLS))
     graph.add_edge(START, "agent")
-    # If the last AI message has tool_calls → "tools", else → END
-    graph.add_conditional_edges(
-        "agent",
-        tools_condition,  # routes to "tools" or END
-    )
+    graph.add_conditional_edges("agent", tools_condition)
     graph.add_edge("tools", "agent")
-
     return graph.compile()

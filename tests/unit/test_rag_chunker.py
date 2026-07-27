@@ -1,4 +1,4 @@
-"""Unit tests for section-aware LangChain chunking."""
+"""Section-aware chunking tests."""
 from langchain_core.documents import Document
 
 from rag.ingestion.chunker import (
@@ -76,9 +76,7 @@ def test_chunk_real_tg_bfp_table_stays_in_one_chunk():
         if "Likely causes" in (c.metadata.get("section") or "")
         or "Seal leak on hot days" in c.page_content
     ]
-    # The table content should appear in a single section chunk, not split on "margins"
     matching = [c for c in chunks if "Seal leak on hot days" in c.page_content]
     assert matching
     assert all("margins" in c.page_content or "NPSH" in c.page_content for c in matching)
-    # No orphan chunk that starts with just "margins"
     assert not any(c.page_content.strip().startswith("margins") for c in chunks)

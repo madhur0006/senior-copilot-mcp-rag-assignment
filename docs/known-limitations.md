@@ -1,18 +1,20 @@
 # Known Limitations
 
-Living list — update during implementation.
-
 ## Current
 
-1. Copilot backend, MCP server, GUI, and tests are not implemented yet (skeleton only).
-2. `docker-compose.yml` currently documents the alarm-api service; MCP/backend/frontend services are commented placeholders.
-3. Architecture diagram image (`architecture-diagram.png`) is not added yet.
-4. Supplied simulator image is amd64-only; arm64 hosts need emulation/Rosetta.
-5. Large simulator tar is excluded from git by `.gitignore` due to size.
+1. `docker compose up` only starts the Alarm API; MCP, backend, and Streamlit GUI run locally via `PYTHONPATH` / Makefile (not full Compose packaging yet).
+2. Supplied simulator image is amd64-only; Apple Silicon needs `--platform linux/amd64` (Rosetta).
+3. Large simulator tar is gitignored (`alarm-management-api-simulator/*.tar`); load it locally before first run.
+4. No dedicated automated GUI e2e test yet; backend e2e covers MCP+RAG via `tests/e2e/` (mocked in CI, live when services are up).
+5. Observability is limited to MCP tool-trace in the GUI (no full request/trace ID logging pipeline).
+6. Context overflow can still occur on very chatty tool loops; tool outputs are compacted to reduce risk.
+7. Demo video and screenshots are not yet linked in the README.
 
 ## Future improvements
 
-- Full Compose one-command startup for all services
-- Richer observability dashboards
+- Full Compose one-command startup (API + MCP + backend + GUI)
+- Richer observability (request/trace IDs, latencies)
 - Stronger hybrid retrieval / reranking
-- More failure-path demos in GUI
+- Automated GUI e2e scenario and broader MCP contract tests
+- Demo video + screenshots linked from README
+- Coverage report in CI artifacts

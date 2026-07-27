@@ -5,17 +5,58 @@ on:
   pull_request:
 
 jobs:
-  placeholder:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Placeholder
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
         run: |
-          echo "CI will run format/lint/tests in Step 9."
-          echo "Skeleton check:"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Unit + mocked e2e tests with coverage
+        env:
+          # No live OpenAI / Alarm API required for this job
+          OPENAI_API_KEY: ""
+          LLM_API_KEY: ""
+        run: |
+          PYTHONPATH=. python -m pytest \
+            tests/unit \
+            tests/e2e/test_investigation_mcp_rag.py::test_e2e_investigation_combines_mcp_and_rag_mocked \
+            --cov=apps \
+            --cov=connectors \
+            --cov=rag \
+            --cov-config=.coveragerc \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage/coverage.xml \
+            --cov-report=html:coverage/html \
+            -q
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage/coverage.xml
+            coverage/html
+          if-no-files-found: warn
+
+      - name: Skeleton checks
+        run: |
           test -f README.md
           test -f .env.example
+          test -f docs/architecture-diagram.png
+          test -f docs/mcp-tool-catalog.md
+          test -f docs/rag-design.md
           test -d mcp-servers/alarm-management
-          test -d rag/documents
+          test -d rag/documents-pdf
           test -d apps/backend
           test -d apps/frontend

@@ -1,9 +1,8 @@
 """
-LangChain retrieval against the Chroma index (Steps 5h–5i, 5k).
+LangChain retrieval against the Chroma index.
 
-5h — query → embed → top-k → text + metadata + scores
-5i — filter by asset / site / doc_type; exclude TEST-INJECT-999
-5k — low-confidence / no-result labelling
+Supports metadata filters (asset/site/doc_type), excludes TEST-INJECT-999 by
+default, and labels low-confidence / empty results as insufficient evidence.
 """
 from dataclasses import dataclass
 
@@ -120,7 +119,7 @@ def retrieve_detailed(
     include_test_inject: bool = False,
 ) -> RetrievalResult:
     """
-    5h retrieval module: embed query, top-k search, return text + metadata + scores.
+    Embed query, top-k search, return text + metadata + scores.
 
     confidence:
       - none: no hits → insufficient evidence

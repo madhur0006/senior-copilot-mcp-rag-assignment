@@ -1,9 +1,4 @@
-"""
-MCP client for the alarm-management FastMCP server.
-
-Uses an in-process FastMCP Client (real MCP tool list/call protocol)
-against mcp-servers/alarm-management/server.py.
-"""
+"""In-process FastMCP client for mcp-servers/alarm-management."""
 from __future__ import annotations
 
 import asyncio
@@ -22,18 +17,16 @@ if str(SERVER_DIR) not in sys.path:
 
 
 def _get_mcp_server():
-    """Import the FastMCP server instance."""
-    import server as alarm_mcp_server  # noqa: WPS433 — path-injected module
+    import server as alarm_mcp_server
 
     return alarm_mcp_server.mcp
 
 
 def _extract_tool_payload(result: Any) -> Any:
-    """Normalize FastMCP / MCP call_tool result to plain JSON-serializable data."""
+    """Normalize FastMCP call_tool result to JSON-serializable data."""
     if result is None:
         return None
 
-    # Newer FastMCP may return CallToolResult-like objects
     data = getattr(result, "data", None)
     if data is not None:
         return data

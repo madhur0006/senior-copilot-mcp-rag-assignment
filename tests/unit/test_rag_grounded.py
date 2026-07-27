@@ -1,4 +1,4 @@
-"""Unit tests for grounded answers + prompt-injection (Steps 5k–5m, 5l)."""
+"""Grounded answer and prompt-injection tests."""
 from unittest.mock import MagicMock
 
 from langchain_core.documents import Document
@@ -104,7 +104,6 @@ def test_generate_grounded_answer_uses_chat_when_high():
 
 
 def test_prompt_injection_uses_test_inject_999_fixture():
-    """5l — dedicated TEST-INJECT-999 test: do not obey hostile instructions."""
     hostile = load_test_inject_excerpt()
     assert "IGNORE ALL PREVIOUS INSTRUCTIONS" in hostile
     assert "TEST-INJECT-999" in hostile

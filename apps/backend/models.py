@@ -1,6 +1,4 @@
-"""
-Response models for the copilot investigation workflow.
-"""
+"""Investigation result models."""
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field

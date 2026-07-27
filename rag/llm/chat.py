@@ -1,6 +1,4 @@
-"""
-LangChain chat models — OpenAI.
-"""
+"""LangChain OpenAI chat models."""
 from langchain_openai import ChatOpenAI
 
 from rag.ingestion.config import RagConfig

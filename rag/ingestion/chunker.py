@@ -1,24 +1,20 @@
 """
-LangChain-friendly chunking with better section / table handling.
+Section-aware chunking for procedure PDFs.
 
-Strategy:
-1. Merge all pages of the same PDF into one document
-2. Split on numbered section headings (1. Purpose, 5. Likely causes, …)
-3. Keep each section as one chunk when possible (so tables stay together)
-4. Only if a section is still very long, use RecursiveCharacterTextSplitter
+Splits on numbered headings so tables/sections stay together; falls back to
+RecursiveCharacterTextSplitter only when a section exceeds SECTION_HARD_MAX.
 """
 import re
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# Soft max for a normal section chunk
 DEFAULT_CHUNK_SIZE = 1800
 DEFAULT_CHUNK_OVERLAP = 200
-# Hard max — only split a section if bigger than this
+# Only split a section if longer than this (keeps tables intact)
 SECTION_HARD_MAX = 3500
 
-# Match: "1. Purpose" or "8.1 High vibration" (not list items with leading spaces)
+# "1. Purpose" or "8.1 High vibration" — not indented list items
 SECTION_HEADING = re.compile(
     r"^(?P<title>(?:\d+\.\d+\s+[A-Z][^\n]{0,70}|\d+\.\s+[A-Z][^\n]{0,70}))$",
     re.MULTILINE,
@@ -52,7 +48,6 @@ def merge_pages_by_doc(documents: list[Document]) -> list[Document]:
     merged = []
     for doc_id in order:
         pages = grouped[doc_id]
-        # Sort by page number when available
         pages = sorted(pages, key=lambda d: d.metadata.get("page", 0) or 0)
         text = "\n".join((p.page_content or "").strip() for p in pages if p.page_content)
         meta = dict(pages[0].metadata)
@@ -63,9 +58,7 @@ def merge_pages_by_doc(documents: list[Document]) -> list[Document]:
 
 
 def split_text_by_sections(text: str) -> list[tuple[str, str]]:
-    """
-    Split full document text into (section_title, section_body) pairs.
-    """
+    """Split full document text into (section_title, section_body) pairs."""
     if not text or not text.strip():
         return []
 
@@ -97,7 +90,6 @@ def chunk_documents(
 ) -> list[Document]:
     """
     Chunk documents with section-aware splitting.
-
     Tables/sections stay together unless a section exceeds SECTION_HARD_MAX.
     """
     merged = merge_pages_by_doc(documents)
@@ -111,17 +103,14 @@ def chunk_documents(
             meta = dict(doc.metadata)
             meta["section"] = section_title
 
-            # Keep whole section if it fits (or is a table-like section under hard max)
             if len(section_text) <= SECTION_HARD_MAX:
                 result.append(Document(page_content=section_text, metadata=meta))
                 continue
 
-            # Very long section only — fall back to LangChain splitter
             for piece in splitter.split_text(section_text):
                 piece_meta = dict(meta)
                 result.append(Document(page_content=piece, metadata=piece_meta))
 
-    # Stable chunk ids per doc
     counters: dict[str, int] = {}
     for chunk in result:
         doc_id = chunk.metadata.get("doc_id", "DOC")

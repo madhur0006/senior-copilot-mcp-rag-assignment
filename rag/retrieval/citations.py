@@ -1,8 +1,4 @@
-"""
-Citation helpers for RAG retrieval hits (Step 5j).
-
-Every hit returns: doc_id, title, section, source path, short excerpt.
-"""
+"""Citation helpers for RAG retrieval hits (doc_id, section, source, excerpt)."""
 from dataclasses import asdict, dataclass
 
 from langchain_core.documents import Document
@@ -20,7 +16,6 @@ class Citation:
     site: str = ""
     score: float | None = None
 
-    # Back-compat alias used in earlier code/docs
     @property
     def pdf_path(self) -> str:
         return self.source_path
@@ -62,11 +57,7 @@ def citations_from_hits(
     hits: list,
     excerpt_chars: int = 280,
 ) -> list[Citation]:
-    """
-    Convert retrieve hits to citations.
-
-    Accepts either Document list or (Document, score) pairs.
-    """
+    """Convert retrieve hits to citations (Document list or (Document, score) pairs)."""
     citations: list[Citation] = []
     for item in hits:
         if isinstance(item, tuple) and len(item) == 2:

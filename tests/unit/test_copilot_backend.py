@@ -1,4 +1,4 @@
-"""Unit tests for Step 6 MCP client helpers (mocked)."""
+"""MCP client helper unit tests."""
 from unittest.mock import patch
 
 from apps.backend.mcp_client import call_mcp_tool, call_mcp_tool_json

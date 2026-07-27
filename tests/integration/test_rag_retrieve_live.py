@@ -1,21 +1,9 @@
-"""
-Integration: retrieve known alarm/procedure queries against a built index.
-
-Skips automatically if ./rag/.index is missing (CI without embeddings).
-
-Run:
-  PYTHONPATH=. python3 -m rag.ingestion.pipeline
-  PYTHONPATH=. python -m pytest tests/integration/test_rag_retrieve_live.py -q
-"""
-from pathlib import Path
-
+"""Live RAG retrieval against a built Chroma index."""
 import pytest
 
 from rag.ingestion.config import RagConfig
 from rag.ingestion.loader import TEST_INJECT_DOC_ID
 from rag.retrieval.retriever import retrieve_detailed
-
-ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +27,6 @@ def test_bfp_high_discharge_retrieves_procedure(require_index, config):
     assert result.documents, "expected at least one hit"
     doc_ids = {c.doc_id for c in result.citations}
     assert TEST_INJECT_DOC_ID not in doc_ids
-    # Prefer BFP procedure / troubleshooting / safety docs
     assert any(
         did.startswith(("OP-BFP", "TG-BFP", "SI-BFP", "MM-BFP")) for did in doc_ids
     )

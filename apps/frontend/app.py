@@ -1,7 +1,5 @@
-"""
-Alarm Investigation Copilot — Streamlit GUI (Step 7).
+"""Streamlit GUI for the Alarm Investigation Copilot.
 
-Run:
   docker start alarm-api-simulator
   PYTHONPATH=. streamlit run apps/frontend/app.py
 """
@@ -48,7 +46,6 @@ def _parse_json_preview(preview: str):
 
 
 def _alarm_summary_from_result(result) -> list[dict]:
-    """Prefer structured alarms from the service; fall back to parsing the trace."""
     if getattr(result, "alarms", None):
         return list(result.alarms)
     alarms = []
@@ -119,7 +116,6 @@ def main():
             st.session_state.last_error = None
             st.rerun()
 
-    # Chat history
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])

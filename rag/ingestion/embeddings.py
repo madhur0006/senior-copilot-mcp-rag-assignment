@@ -1,8 +1,4 @@
-"""
-LangChain embeddings — OpenAI.
-
-Creates the embeddings client and embeds Document texts.
-"""
+"""LangChain OpenAI embeddings for document texts."""
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 
@@ -31,10 +27,7 @@ def embed_documents(
     config: RagConfig = None,
     embeddings=None,
 ) -> list[list[float]]:
-    """
-    Embed document page_content strings.
-    Returns list of vectors (same order as documents).
-    """
+    """Embed document page_content strings; returns vectors in the same order."""
     if config is None:
         config = RagConfig()
     if embeddings is None:

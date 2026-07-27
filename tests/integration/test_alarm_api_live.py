@@ -39,7 +39,6 @@ def test_live_health(client):
 
 
 def test_live_auth_required_for_alarms():
-    # Call /alarms without Authorization header — should fail auth
     config = AlarmApiConfig(ALARM_API_BASE_URL=LIVE_BASE, ALARM_API_TOKEN="demo-token")
     with AlarmApiClient(config) as client:
         with pytest.raises(AlarmApiAuthError):

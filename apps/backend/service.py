@@ -1,6 +1,4 @@
-"""
-Copilot service — run an end-to-end investigation with tool trace.
-"""
+"""Run an end-to-end investigation and collect tool trace / citations / alarms."""
 from __future__ import annotations
 
 import json
@@ -67,7 +65,6 @@ def _extract_trace(
                 content = json.dumps(content, default=str)
             content_str = str(content)
             tool_name = getattr(msg, "name", None) or (item.tool if item else "tool")
-            # Keep more text for alarm payloads so the GUI can show them
             limit = 4000 if tool_name in ALARM_TOOLS else 800
             preview = _preview(content_str, limit=limit)
             ok = not (
@@ -125,9 +122,7 @@ def run_investigation(
     config: RagConfig = None,
     discover_tools: bool = True,
 ) -> InvestigationResult:
-    """
-    Run the LangGraph MCP+RAG agent for one natural-language investigation request.
-    """
+    """Run the MCP+RAG agent for one investigation query."""
     if config is None:
         config = RagConfig()
 
@@ -139,7 +134,6 @@ def run_investigation(
             discovered = [f"(discovery failed: {exc})"]
 
     agent = build_agent(config)
-    # Cap tool-loop depth so a chatty run cannot explode context
     result = agent.invoke(
         {"messages": [HumanMessage(content=query)]},
         config={"recursion_limit": 18},

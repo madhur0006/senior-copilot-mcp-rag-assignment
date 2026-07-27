@@ -102,7 +102,6 @@ class AlarmApiClient:
                     method, path, params=params, json=json, headers=headers
                 )
                 
-                # Retry on server errors
                 if response.status_code in [429, 502, 503, 504] and attempt < max_attempts - 1:
                     time.sleep(0.5 * (attempt + 1))
                     continue

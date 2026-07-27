@@ -1,6 +1,5 @@
 # Python
 .venv/
-.venv-rag/
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -9,8 +8,10 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+coverage/
 dist/
 build/
+blobs/
 
 # Env / secrets
 .env
