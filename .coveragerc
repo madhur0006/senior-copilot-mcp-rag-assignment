@@ -1,0 +1,19 @@
+# Omit GUI and CLI entrypoints from coverage totals.
+
+[run]
+omit =
+    */apps/frontend/*
+    */apps/backend/__main__.py
+    */rag/scripts/*
+    */tests/*
+    */.venv/*
+
+[report]
+omit =
+    */apps/frontend/*
+    */apps/backend/__main__.py
+    */rag/scripts/*
+    */tests/*
+    */.venv/*
+show_missing = true
+skip_empty = true

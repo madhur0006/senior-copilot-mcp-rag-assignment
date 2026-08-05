@@ -1,0 +1,46 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage/
+dist/
+build/
+blobs/
+
+# Env / secrets
+.env
+.env.local
+*.pem
+*.key
+credentials*.json
+
+# Node / frontend
+node_modules/
+apps/frontend/dist/
+apps/frontend/build/
+.npm/
+
+# RAG indexes / local data
+rag/.index/
+rag/**/index/
+*.chroma/
+*.faiss
+*.pkl
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Docker / logs
+*.log
+
+# Large simulator image (do not commit; keep local or use Git LFS/release)
+alarm-management-api-simulator/*.tar

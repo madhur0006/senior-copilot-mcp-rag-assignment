@@ -1,0 +1,29 @@
+services:
+  alarm-api:
+    image: alarm-api-simulator-alarm-api-simulator:latest
+    platform: linux/amd64
+    container_name: alarm-api-simulator
+    environment:
+      AUTH_ENABLED: "true"
+    ports:
+      - "8000:8000"
+    # Image must already be loaded from alarm-management-api-simulator/*.tar
+    # or replace this service with a locally built equivalent later.
+
+  # Placeholders — implemented in later steps
+  # alarm-mcp:
+  #   build: ./mcp-servers/alarm-management
+  #   ports: ["9000:9000"]
+  #   env_file: .env
+  #   depends_on: [alarm-api]
+
+  # backend:
+  #   build: ./apps/backend
+  #   ports: ["8080:8080"]
+  #   env_file: .env
+  #   depends_on: [alarm-mcp]
+
+  # frontend:
+  #   build: ./apps/frontend
+  #   ports: ["3000:3000"]
+  #   depends_on: [backend]
