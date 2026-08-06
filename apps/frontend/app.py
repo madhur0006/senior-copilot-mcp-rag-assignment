@@ -1,8 +1,4 @@
-"""Streamlit GUI for the Alarm Investigation Copilot.
-
-  docker start alarm-api-simulator
-  PYTHONPATH=. streamlit run apps/frontend/app.py
-"""
+"""Streamlit GUI for the Alarm Investigation Copilot."""
 from __future__ import annotations
 
 import json

@@ -1,28 +1,28 @@
-# Alarm Management MCP Server
+# Alarm Management MCP server
 
-Exposes Alarm Management API capabilities as MCP tools.
+Thin MCP wrapper over the Alarm Management API.
 
 ## Tools
 
 | Tool | Purpose |
 |------|---------|
-| `search_assets` | Find assets by name or ID |
-| `get_asset_metadata` | Asset details and related assets |
-| `get_alarms` | List alarms with filters |
-| `get_recent_critical_alarms` | High/critical alarms over N days |
-| `correlate_alarms` | Patterns across assets |
-| `calculate_alarm_priority` | Priority score for an alarm |
-| `get_operator_recommendations` | Recommended operator actions |
+| `search_assets` | Search assets |
+| `get_asset_metadata` | Asset details |
+| `get_alarms` | List / filter alarms |
+| `get_recent_critical_alarms` | High/critical over N days |
+| `correlate_alarms` | Correlation across assets |
+| `calculate_alarm_priority` | Priority score |
+| `get_operator_recommendations` | Recommended actions |
 
-## Run (stdio)
+## Run
 
 ```bash
 cd mcp-servers/alarm-management
 PYTHONPATH=../.. python3 server.py
 ```
 
-Requires Alarm API on `ALARM_API_BASE_URL` (default `http://localhost:8000`) with `ALARM_API_TOKEN`.
+Needs the Alarm API up (`ALARM_API_BASE_URL`, default `http://localhost:8000`) and `ALARM_API_TOKEN`.
 
-## Copilot integration
+## Used by the copilot
 
-`apps/backend/mcp_client.py` connects in-process, discovers tools, and invokes them during investigation. Results are combined with RAG via `search_procedures`.
+`apps/backend/mcp_client.py` loads this server and calls the tools during an investigation. Procedure text comes from the separate RAG tool `search_procedures`.

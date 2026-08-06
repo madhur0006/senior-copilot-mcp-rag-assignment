@@ -15,7 +15,6 @@ alarm_client = None
 
 
 def get_client():
-    """Shared Alarm API client (lazy init)."""
     global alarm_client
     if alarm_client is None:
         config = AlarmApiConfig()

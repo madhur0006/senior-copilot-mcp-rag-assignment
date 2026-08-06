@@ -1,4 +1,4 @@
-"""LangChain tools: MCP alarm APIs + local RAG. Outputs are compacted for context limits."""
+"""LangChain tools wrapping MCP alarms + local RAG (results compacted for context)."""
 from __future__ import annotations
 
 import json
@@ -9,7 +9,7 @@ from langchain_core.tools import tool
 from apps.backend.mcp_client import call_mcp_tool
 from rag.retrieval.retriever import retrieve_detailed
 
-# Cap tool JSON size to stay under model context limits
+# Keep tool payloads small for the model context window
 _MAX_TOOL_CHARS = 6000
 _ALARM_KEYS = (
     "alarm_id",
@@ -115,10 +115,7 @@ def get_recent_critical_alarms(asset_id: str, days: int = 90) -> str:
 
 @tool
 def correlate_alarms(asset_ids: str, days: int = 90) -> str:
-    """
-    Correlate alarms across assets via MCP.
-    Pass asset_ids as a comma-separated string, e.g. 'AST00001,AST00002'.
-    """
+    """Correlate alarms across assets via MCP. asset_ids is comma-separated (e.g. AST00001,AST00002)."""
     ids = [a.strip() for a in asset_ids.split(",") if a.strip()][:5]
     return _dump(call_mcp_tool("correlate_alarms", {"asset_ids": ids, "days": days}))
 

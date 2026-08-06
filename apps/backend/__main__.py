@@ -1,9 +1,4 @@
-"""
-Run the copilot investigation from the command line.
-
-  docker start alarm-api-simulator
-  PYTHONPATH=. python3 -m apps.backend
-"""
+"""CLI entry: PYTHONPATH=. python3 -m apps.backend"""
 from apps.backend.mcp_client import list_mcp_tools
 from apps.backend.service import run_investigation
 from rag.ingestion.config import RagConfig

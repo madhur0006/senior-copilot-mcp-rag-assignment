@@ -1,14 +1,13 @@
-"""Document ingestion helpers — LangChain pipeline."""
+"""RAG ingestion helpers."""
 
 from rag.ingestion.chunker import chunk_documents
 from rag.ingestion.embeddings import embed_documents, get_embeddings
 from rag.ingestion.index import build_index, get_vectorstore
 from rag.ingestion.loader import load_documents
 
-# Lazy import avoids RuntimeWarning when running: python -m rag.ingestion.pipeline
-
 
 def __getattr__(name: str):
+    # Lazy import so `python -m rag.ingestion.pipeline` does not warn
     if name == "run_ingestion":
         from rag.ingestion.pipeline import run_ingestion
 

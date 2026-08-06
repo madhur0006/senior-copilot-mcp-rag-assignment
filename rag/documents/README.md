@@ -5,13 +5,7 @@ Synthetic but realistic EastRefinery documents for the **Alarm Investigation and
 ## Formats
 
 - PDF corpus for RAG: `rag/documents-pdf/` (+ `metadata.json`)
-- Markdown sources (optional editing): `rag/documents/`
-
-Regenerate PDFs anytime:
-
-```bash
-.venv-rag/bin/python rag/scripts/md_to_pdf.py
-```
+- Markdown sources (reference / editing): `rag/documents/`
 
 ## Folder layout
 
@@ -24,15 +18,13 @@ rag/
 │   ├── troubleshooting-guides/
 │   ├── safety-instructions/
 │   └── alarm-philosophy/
-├── documents-pdf/             # PDF corpus used for RAG
-│   ├── metadata.json          # machine-readable catalog
-│   ├── operating-procedures/
-│   ├── maintenance-manuals/
-│   ├── troubleshooting-guides/
-│   ├── safety-instructions/
-│   └── alarm-philosophy/
-└── scripts/
-    └── md_to_pdf.py
+└── documents-pdf/             # PDF corpus used for RAG
+    ├── metadata.json          # machine-readable catalog
+    ├── operating-procedures/
+    ├── maintenance-manuals/
+    ├── troubleshooting-guides/
+    ├── safety-instructions/
+    └── alarm-philosophy/
 ```
 
 ## Documents included (15 production + 1 injection test fixture)
@@ -70,7 +62,7 @@ Fields used for ingestion:
 ## Notes for RAG implementation
 
 1. Ingest PDFs from `rag/documents-pdf/` and join with `metadata.json`.
-2. Keep markdown sources in `rag/documents/` only for editing / regenerating PDFs.
+2. Keep markdown sources in `rag/documents/` as readable reference; ingest uses PDFs only.
 3. Prefer section-aware chunking.
 4. Store citations as `doc_id` + section + source path.
 5. Filter on `assets`, `doc_type`, and `site` when the question names them.

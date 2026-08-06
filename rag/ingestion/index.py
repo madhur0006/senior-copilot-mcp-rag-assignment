@@ -1,12 +1,4 @@
-"""
-LangChain + Chroma vector index.
-
-Build / open the local Chroma store under VECTOR_STORE_URL.
-
-Uses an explicit chromadb.PersistentClient so LangChain does not fall back
-to HttpClient(localhost:8000) — that port is the Alarm API simulator and
-causes: "Could not connect to tenant default_tenant".
-"""
+"""Local Chroma index. Uses PersistentClient so LangChain does not hit :8000 (Alarm API)."""
 from pathlib import Path
 
 import chromadb
@@ -20,7 +12,6 @@ COLLECTION_NAME = "alarm_rag"
 
 
 def _clear_chroma_system_cache() -> None:
-    """Avoid SharedSystemClient conflicts across Streamlit reruns."""
     try:
         from chromadb.api.client import SharedSystemClient
 
@@ -36,7 +27,6 @@ def _persistent_client(index_dir: Path) -> chromadb.PersistentClient:
 
 
 def get_vectorstore(config: RagConfig = None, embeddings=None) -> Chroma:
-    """Open (or create) the persistent Chroma collection."""
     if config is None:
         config = RagConfig()
     if embeddings is None:
@@ -55,11 +45,6 @@ def build_index(
     config: RagConfig = None,
     reset: bool = True,
 ) -> Chroma:
-    """
-    Upsert chunks into Chroma.
-
-    If reset=True, delete the old collection folder first so rebuild is clean.
-    """
     if config is None:
         config = RagConfig()
 
@@ -82,7 +67,6 @@ def build_index(
 
 
 def _clear_index_dir(index_dir: Path) -> None:
-    """Remove old index files if present."""
     if not index_dir.exists():
         return
     for path in index_dir.rglob("*"):

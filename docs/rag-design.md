@@ -1,98 +1,75 @@
-# RAG Design
+# RAG design
 
-## Source document types
+## Documents
 
-Corpus under `rag/documents-pdf/` (ingested) with editable Markdown mirrors in `rag/documents/`:
+Ingested from `rag/documents-pdf/` (plus `metadata.json`). Markdown under `rag/documents/` is the editable source.
+
+Types in the sample corpus:
 
 - Operating procedures (`OP-*`)
 - Maintenance manuals (`MM-*`)
 - Troubleshooting guides (`TG-*`, `KA-*`)
 - Safety instructions (`SI-*`)
 - Alarm philosophy (`AP-*`)
-- Prompt-injection fixture (`TEST-INJECT-999`, excluded from normal retrieval)
+- Injection test fixture (`TEST-INJECT-999`) – not used in normal search
 
-Metadata: `rag/documents-pdf/metadata.json` (`doc_id`, `title`, `doc_type`, `assets`, `site`, `units`, `alarm_tags`, `pdf_path`, …).
+Metadata fields include `doc_id`, title, type, assets, site, units, alarm tags, pdf path.
 
-## Ingestion flow
+## Ingest pipeline
 
 ```text
 metadata.json + PDFs
-  → load_documents()          # PyMuPDFLoader + metadata join
-  → chunk_documents()         # section-aware chunking
-  → build_index()             # OpenAI embeddings → Chroma
+  → load_documents()     # PyMuPDF + join metadata
+  → chunk_documents()    # split on numbered sections when possible
+  → build_index()        # OpenAI embed → Chroma
 ```
-
-Command:
 
 ```bash
 PYTHONPATH=. python3 -m rag.ingestion.pipeline
-# or: make ingest
+# same as: make ingest
 ```
 
-Rebuild the index after changing embedding model/provider or corpus files.
+Rebuild after changing PDFs, metadata, or embedding model.
 
-## Text extraction
+## Extraction / chunking
 
-LangChain `PyMuPDFLoader` loads each PDF page; parent metadata from `metadata.json` is attached to every page/chunk.
+Pages come from LangChain `PyMuPDFLoader`. Chunking prefers headings like `8.1 High vibration` so tables stay with their section. Very long sections fall back to a recursive text splitter.
 
-## Chunking strategy
+Chunk metadata usually carries `doc_id`, section, site, assets, source path, etc.
 
-Section-aware split on numbered headings (e.g. `8.1 High vibration`) so procedure tables stay intact. Only sections longer than a hard max are further split with `RecursiveCharacterTextSplitter`.
+## Embeddings and store
 
-## Chunk metadata
+- OpenAI `text-embedding-3-small`
+- Chroma collection `alarm_rag` under `./rag/.index` by default
+- Persistent client is created in code on purpose (avoids hitting port 8000 as an HTTP Chroma server)
 
-Typical fields on each chunk: `doc_id`, `title`, `section`, `doc_type`, `site`, `assets`, `units`, `pdf_path` / source path, revision where present.
+No hybrid search / reranker in this version – plain vector similarity. The agent tool also prefers non-Introduction sections when it can.
 
-## Embedding model
+## Filters
 
-- Provider: OpenAI
-- Model: `text-embedding-3-small` (`OPENAI_EMBEDDING_MODEL`)
+`site`, `doc_type`, `doc_id`, and equipment name (`asset`) are supported.  
+Alarm API ids such as `AST00001` are not in doc metadata, so the RAG tool ignores those as asset filters.
 
-## Vector database / index
+`TEST-INJECT-999` is filtered out of normal retrieval.
 
-- LangChain Chroma collection `alarm_rag`
-- Path: `VECTOR_STORE_URL` (default `./rag/.index`)
-- Explicit `chromadb.PersistentClient` (avoids HttpClient on `:8000`)
+## Citations and weak evidence
 
-## Hybrid search / reranking
+`citations.py` builds `doc_id`, section, path, excerpt, score.  
+`retrieve_detailed` sets confidence to high / low / none. If evidence is weak, the grounded helper says so instead of inventing steps.
 
-Not used. Dense similarity search only. Optional preference for non-Introduction sections when ranking tool excerpts for the agent.
+## Prompt injection
 
-## Retrieval filters
+- Fixture doc excluded by default
+- Prompts tell the model that excerpts are untrusted data
+- Unit tests cover the hostile fixture case
 
-Supported filters include `site`, `doc_type`, `doc_id`, and equipment `asset` name (substring). Alarm API ids like `AST00001` are not document metadata and are skipped by the copilot RAG tool.
+## Refresh steps
 
-`TEST-INJECT-999` is excluded from normal search.
+1. Update PDFs under `rag/documents-pdf/` (and `metadata.json` if paths/ids change)
+2. Re-run ingest
+3. Optional smoke: `PYTHONPATH=. python3 -m rag.retrieval.grounded`
 
-## Citation construction
-
-`rag/retrieval/citations.py` builds citations with `doc_id`, `section`, `source_path`, excerpt, and distance score. GUI and agent surfaces show these fields.
-
-## Low-confidence handling
-
-`retrieve_detailed` labels confidence `high` / `low` / `none` using distance thresholds and empty-hit handling. Grounded helper returns an insufficient-evidence message instead of inventing steps.
-
-## Prompt-injection protections
-
-- Hostile fixture excluded from default retrieval
-- Grounded / agent prompts treat retrieved text as untrusted data
-- Unit tests assert hostile instructions are not obeyed
-
-## Index refresh process
-
-1. Update Markdown (optional) and regenerate PDFs if needed (`rag/scripts/md_to_pdf.py`)
-2. Update `metadata.json` if paths/ids change
-3. Run `PYTHONPATH=. python3 -m rag.ingestion.pipeline` (`reset=True` rebuilds collection)
-4. Smoke with `PYTHONPATH=. python3 -m rag.retrieval.grounded`
-
-## Example retrieval
-
-```bash
-PYTHONPATH=. python3 -m rag.retrieval.grounded
-PYTHONPATH=. python3 -m pytest tests/unit/test_rag_*.py tests/integration/test_rag_retrieve_live.py -q
-```
-
-Example citation shape:
+## Example citation
 
 ```json
 {

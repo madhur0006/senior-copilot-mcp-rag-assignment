@@ -1,9 +1,4 @@
-"""
-Grounded answer helper — query → retrieved chunks → cited answer.
-
-Enforces insufficient-evidence when confidence is none/low, and treats
-retrieved text as untrusted data (prompt-injection boundary).
-"""
+"""Grounded answers from retrieved chunks."""
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -90,10 +85,6 @@ def generate_grounded_answer(
     retrieval: RetrievalResult = None,
     chat_model=None,
 ) -> GroundedAnswer:
-    """
-    RAG-only grounded answer. On none/low confidence, return insufficient
-    evidence without inventing procedure steps.
-    """
     if config is None:
         config = RagConfig()
 
@@ -126,7 +117,6 @@ def generate_grounded_answer(
 
 
 def load_test_inject_excerpt() -> str:
-    """Load hostile text from the TEST-INJECT-999 markdown fixture."""
     path = (
         ROOT
         / "rag"
@@ -146,7 +136,6 @@ def answer_from_forced_excerpts(
     chat_model=None,
     doc_id: str = "TEST-INJECT-999",
 ) -> GroundedAnswer:
-    """Force specific excerpt text into the grounded prompt (injection tests)."""
     if config is None:
         config = RagConfig()
 
