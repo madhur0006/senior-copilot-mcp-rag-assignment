@@ -213,6 +213,5 @@ PYTHONPATH=../.. python3 server.py
 ```
 
 ```bash
-PYTHONPATH=. python3 scripts/test_mcp_tools.py
 PYTHONPATH=. python3 -c "from apps.backend.mcp_client import list_mcp_tools; print([t['name'] for t in list_mcp_tools()])"
 ```

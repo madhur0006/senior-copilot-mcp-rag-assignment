@@ -38,9 +38,6 @@ retrieve:
 investigate:
 	PYTHONPATH=. python3 -m apps.backend
 
-test-mcp-tools:
-	PYTHONPATH=. python3 scripts/test_mcp_tools.py
-
 test:
 	PYTHONPATH=. python3 -m pytest tests/unit tests/integration tests/e2e
 
