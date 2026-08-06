@@ -8,7 +8,6 @@
 4. No dedicated automated GUI e2e test yet; backend e2e covers MCP+RAG via `tests/e2e/` (mocked in CI, live when services are up).
 5. Observability is limited to MCP tool-trace in the GUI (no full request/trace ID logging pipeline).
 6. Context overflow can still occur on very chatty tool loops; tool outputs are compacted to reduce risk.
-7. Demo video and screenshots are not yet linked in the README.
 
 ## Future improvements
 
@@ -16,5 +15,3 @@
 - Richer observability (request/trace IDs, latencies)
 - Stronger hybrid retrieval / reranking
 - Automated GUI e2e scenario and broader MCP contract tests
-- Demo video + screenshots linked from README
-- Coverage report in CI artifacts

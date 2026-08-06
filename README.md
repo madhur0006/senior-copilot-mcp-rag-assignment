@@ -188,12 +188,12 @@ User → Streamlit GUI → LangGraph agent
 
 See [`docs/known-limitations.md`](docs/known-limitations.md).
 
-Highlights: full multi-service Compose packaging is not wired yet; demo video/screenshots still outstanding for final submission.
+Highlights: full multi-service Compose packaging is not wired yet (Alarm API via Compose/Makefile; MCP + GUI run locally).
 
 ## Demo evidence
 
-- Demo video (≤10 min): _link to be added_
-- Screenshots: _to be added under `docs/` or linked from README_
+- Demo video (≤10 min): [`video-explanation/abb-alarm-api-mcp-video.mp4`](video-explanation/abb-alarm-api-mcp-video.mp4)
+- Architecture diagram: [`docs/architecture-diagram.png`](docs/architecture-diagram.png)
 
 ## Repository layout
 
