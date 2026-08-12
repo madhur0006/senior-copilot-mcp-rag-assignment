@@ -1,12 +1,10 @@
-from __future__ import annotations
-
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AlarmApiConfig(BaseSettings):
-    """Configuration for the Alarm Management API connector."""
-
+    """Configuration for Alarm API client - reads from environment variables."""
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -17,12 +15,10 @@ class AlarmApiConfig(BaseSettings):
     base_url: str = Field(
         default="http://localhost:8000",
         alias="ALARM_API_BASE_URL",
-        description="Alarm API base URL without trailing slash",
     )
     token: str = Field(
         default="demo-token",
         alias="ALARM_API_TOKEN",
-        description="Bearer token for Authorization header",
     )
     timeout_seconds: float = Field(
         default=30.0,
@@ -31,8 +27,6 @@ class AlarmApiConfig(BaseSettings):
     retry_count: int = Field(
         default=3,
         alias="RETRY_COUNT",
-        ge=0,
-        le=10,
     )
     client_id: str = Field(
         default="alarm-investigation-copilot",

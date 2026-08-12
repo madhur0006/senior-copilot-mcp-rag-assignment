@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 from datetime import datetime, timedelta, timezone
 
@@ -11,7 +9,7 @@ from connectors.alarm_api import AlarmApiAuthError, AlarmApiClient, AlarmApiConf
 LIVE_BASE = os.getenv("ALARM_API_BASE_URL", "http://localhost:8000")
 
 
-def _simulator_up() -> bool:
+def _simulator_up():
     try:
         response = httpx.get(f"{LIVE_BASE.rstrip('/')}/health", timeout=2.0)
         return response.status_code == 200
@@ -26,7 +24,7 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture
-def client() -> AlarmApiClient:
+def client():
     config = AlarmApiConfig(
         ALARM_API_BASE_URL=LIVE_BASE,
         ALARM_API_TOKEN=os.getenv("ALARM_API_TOKEN", "demo-token"),
@@ -35,26 +33,24 @@ def client() -> AlarmApiClient:
         yield c
 
 
-def test_live_health(client: AlarmApiClient) -> None:
+def test_live_health(client):
     data = client.health()
     assert data.get("status") == "ok"
 
 
-def test_live_auth_required_for_alarms() -> None:
-    bad = AlarmApiConfig(ALARM_API_BASE_URL=LIVE_BASE, ALARM_API_TOKEN="")
-    # Empty bearer still sends header; simulator checks non-empty. Use no-auth request path.
-    with AlarmApiClient(bad) as client:
+def test_live_auth_required_for_alarms():
+    config = AlarmApiConfig(ALARM_API_BASE_URL=LIVE_BASE, ALARM_API_TOKEN="demo-token")
+    with AlarmApiClient(config) as client:
         with pytest.raises(AlarmApiAuthError):
-            # force unauthenticated call
-            client.request("GET", "/alarms", auth=False)
+            client._request("GET", "/alarms", auth=False)
 
 
-def test_live_search_metadata_alarms_chain(client: AlarmApiClient) -> None:
-    search = client.search_assets("Boiler Feed Pump 101", limit=5, trace_id="step3-live")
+def test_live_search_metadata_alarms_chain(client):
+    search = client.search_assets("Boiler Feed Pump 101", limit=5)
     assert search["total_results"] >= 1
     asset_id = search["results"][0]["asset_id"]
 
-    meta = client.get_asset_metadata(asset_id, trace_id="step3-live")
+    meta = client.get_asset_metadata(asset_id)
     assert meta["asset_id"] == asset_id
     assert "related_assets" in meta
 
@@ -65,15 +61,14 @@ def test_live_search_metadata_alarms_chain(client: AlarmApiClient) -> None:
         page_size=5,
         start_time=start.isoformat().replace("+00:00", "Z"),
         end_time=end.isoformat().replace("+00:00", "Z"),
-        trace_id="step3-live",
     )
     assert "data" in alarms
 
     if alarms["data"]:
         alarm_id = alarms["data"][0]["alarm_id"]
-        priority = client.get_priority_score(alarm_id, trace_id="step3-live")
+        priority = client.get_priority_score(alarm_id)
         assert isinstance(priority, dict)
-        recs = client.get_operator_recommendations(alarm_id, trace_id="step3-live")
+        recs = client.get_operator_recommendations(alarm_id)
         assert isinstance(recs, dict)
 
     correlation = client.correlate_alarms(
@@ -84,7 +79,6 @@ def test_live_search_metadata_alarms_chain(client: AlarmApiClient) -> None:
                 "end_time": end.isoformat().replace("+00:00", "Z"),
             },
             "min_support": 1,
-        },
-        trace_id="step3-live",
+        }
     )
     assert isinstance(correlation, dict)

@@ -1,70 +1,60 @@
-# API Integration
+# API integration
 
-## Source system
+## Source
 
-Alarm Management API Simulator provided in `alarm-management-api-simulator/`.
+Alarm Management API simulator under `alarm-management-api-simulator/`.
 
-- Base URL (local): `http://localhost:8000`
-- Auth: `Authorization: Bearer demo-token` when `AUTH_ENABLED=true`
-- Docs: `http://localhost:8000/docs`
-- OpenAPI: `http://localhost:8000/openapi.json`
-
-## Important rule (ABB)
-
-The **copilot orchestration layer must not call the Alarm API directly**.  
-Only the MCP server (via connectors) talks to the Alarm API.
-
-## Key operations used by this use case
-
-| Capability | Method / path |
+| | |
 |---|---|
-| Health | `GET /health` |
-| Asset search | `GET /assets/search` |
-| Asset metadata | `GET /assets/{asset_id}/metadata` |
-| Alarms | `GET /alarms` |
-| Alarm by ID | `GET /alarms/{alarm_id}` |
-| Summary | `POST /alarms/summary` |
-| Trends | `POST /alarms/trends` |
-| Correlation | `POST /alarms/correlation` |
-| Priority score | `POST /alarms/priority-score` |
-| Operator recommendations | `POST /recommendations/operator-actions` |
+| Base URL | `http://localhost:8000` |
+| Auth | `Authorization: Bearer demo-token` when `AUTH_ENABLED=true` |
+| Swagger | http://localhost:8000/docs |
+| OpenAPI | http://localhost:8000/openapi.json |
 
-## Connector implementation (Step 3)
+## Important boundary
 
-Code lives in `connectors/alarm_api/`:
+The agent / orchestration code does not call this API directly.  
+Calls go: agent → MCP client → MCP server → `connectors/alarm_api` → HTTP.
 
-- `config.py` — reads `.env` (`ALARM_API_BASE_URL`, `ALARM_API_TOKEN`, timeouts, retries)
-- `client.py` — `AlarmApiClient` with auth, retries, trace headers, convenience methods
-- `errors.py` — mapped errors (`AlarmApiAuthError`, timeout, validation, not found)
+## Endpoints used
 
-Smoke check:
+| Capability | API | MCP tool |
+|---|---|---|
+| Health | `GET /health` | (smoke via connector) |
+| Asset search | `GET /assets/search` | `search_assets` |
+| Asset metadata | `GET /assets/{id}/metadata` | `get_asset_metadata` |
+| Alarms | `GET /alarms` | `get_alarms`, `get_recent_critical_alarms` |
+| Correlation | `POST /alarms/correlation` | `correlate_alarms` |
+| Priority | `POST /alarms/priority-score` | `calculate_alarm_priority` |
+| Recommendations | `POST /recommendations/operator-actions` | `get_operator_recommendations` |
 
-```bash
-python scripts/smoke_alarm_api_client.py
-```
+## Connector
 
-Unit + live tests:
+`connectors/alarm_api/`:
 
-```bash
-python -m pytest tests/unit tests/integration
-```
+- `config.py` – env for base URL, token, timeout, retries
+- `client.py` – requests + retries + trace headers
+- `errors.py` – auth / timeout / validation / not-found
 
-## Cross-cutting concerns
-
-- Timeout and retry in connector
-- Pagination for alarm lists
-- Trace headers (`trace_id` / `trace-id`, `x-client-id`, `x-metadata-tag`) where supported
-- Map HTTP errors into clear connector/MCP errors
-- Never log the raw bearer token
-
-## Local Apple Silicon note
-
-Supplied image is `linux/amd64`. On arm64 Macs with Rancher Desktop, run with:
+Quick check:
 
 ```bash
-docker run -d --name alarm-api-simulator --platform linux/amd64 \
-  -e AUTH_ENABLED=true -p 8000:8000 \
-  alarm-api-simulator-alarm-api-simulator:latest
+PYTHONPATH=. python3 -c "from connectors.alarm_api import AlarmApiClient; print(AlarmApiClient().health())"
 ```
 
-Rosetta/VzRosetta should be enabled if QEMU segfaults occur.
+## Other behaviour
+
+- Retries and timeouts live in the connector
+- Alarm list calls support pagination
+- Trace / client headers are sent when the API accepts them
+- Token is not written into GUI tool previews
+
+## Apple Silicon
+
+Image is `linux/amd64`. Prefer:
+
+```bash
+make simulator-up
+```
+
+or run with `--platform linux/amd64` yourself.

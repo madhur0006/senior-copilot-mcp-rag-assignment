@@ -1,18 +1,10 @@
-# Known Limitations
+# Known limitations
 
-Living list — update during implementation.
+Deliberate scope choices for this assignment demo:
 
-## Current
-
-1. Copilot backend, MCP server, GUI, and tests are not implemented yet (skeleton only).
-2. `docker-compose.yml` currently documents the alarm-api service; MCP/backend/frontend services are commented placeholders.
-3. Architecture diagram image (`architecture-diagram.png`) is not added yet.
-4. Supplied simulator image is amd64-only; arm64 hosts need emulation/Rosetta.
-5. Large simulator tar is excluded from git by `.gitignore` due to size.
-
-## Future improvements
-
-- Full Compose one-command startup for all services
-- Richer observability dashboards
-- Stronger hybrid retrieval / reranking
-- More failure-path demos in GUI
+- Compose starts the Alarm API simulator. MCP and Streamlit are started with Make / `PYTHONPATH` (see README Quick start).
+- Simulator image is amd64; `make simulator-up` passes `--platform linux/amd64`.
+- Simulator `.tar` is gitignored (large). Load it once locally before the first run.
+- Backend e2e covers MCP + RAG. There is no Selenium-style browser GUI e2e.
+- Observability is the Streamlit tool trace (no separate metrics stack).
+- Tool outputs are compacted before they go back to the model to keep LLM context under control.

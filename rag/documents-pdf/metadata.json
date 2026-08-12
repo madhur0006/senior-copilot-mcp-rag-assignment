@@ -1,0 +1,391 @@
+[
+  {
+    "doc_id": "OP-BFP-001",
+    "title": "Boiler Feed Pump 101/102 Operating Procedure",
+    "path": "operating-procedures/OP-BFP-001-boiler-feed-pump-operation.pdf",
+    "doc_type": "operating_procedure",
+    "assets": [
+      "Boiler Feed Pump 101",
+      "Boiler Feed Pump 102",
+      "BFP-101",
+      "BFP-102"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "LOW_SUCTION_PRESSURE",
+      "HIGH_VIBRATION",
+      "SEAL_LEAK",
+      "MOTOR_OVERLOAD"
+    ],
+    "revision": "3.2",
+    "effective_date": "2025-11-01",
+    "pdf_path": "operating-procedures/OP-BFP-001-boiler-feed-pump-operation.pdf"
+  },
+  {
+    "doc_id": "OP-CMP-002",
+    "title": "Centrifugal Compressor Operating Procedure",
+    "path": "operating-procedures/OP-CMP-002-centrifugal-compressor-operation.pdf",
+    "doc_type": "operating_procedure",
+    "assets": [
+      "Compressor C-201",
+      "Compressor C-202",
+      "Discharge Compressor"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "LOW_SUCTION_PRESSURE",
+      "HIGH_DISCHARGE_TEMP",
+      "SURGE",
+      "VIBRATION_HIGH"
+    ],
+    "revision": "2.1",
+    "effective_date": "2025-09-15",
+    "pdf_path": "operating-procedures/OP-CMP-002-centrifugal-compressor-operation.pdf"
+  },
+  {
+    "doc_id": "OP-MTR-003",
+    "title": "Critical Motor Start and Trip Response Procedure",
+    "path": "operating-procedures/OP-MTR-003-critical-motor-operation.pdf",
+    "doc_type": "operating_procedure",
+    "assets": [
+      "Motor M-501",
+      "Motor M-502",
+      "Boiler Feed Pump Motor"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "MOTOR_TRIP",
+      "OVERCURRENT",
+      "GROUND_FAULT",
+      "HIGH_WINDING_TEMP",
+      "BEARING_TEMP_HIGH"
+    ],
+    "revision": "1.4",
+    "effective_date": "2026-01-10",
+    "pdf_path": "operating-procedures/OP-MTR-003-critical-motor-operation.pdf"
+  },
+  {
+    "doc_id": "MM-BFP-010",
+    "title": "Boiler Feed Pump Maintenance Manual",
+    "path": "maintenance-manuals/MM-BFP-010-boiler-feed-pump-maintenance.pdf",
+    "doc_type": "maintenance_manual",
+    "assets": [
+      "Boiler Feed Pump 101",
+      "Boiler Feed Pump 102"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3"
+    ],
+    "alarm_tags": [
+      "HIGH_VIBRATION",
+      "SEAL_LEAK",
+      "BEARING_TEMP_HIGH",
+      "LOW_FLOW"
+    ],
+    "revision": "4.0",
+    "effective_date": "2025-08-01",
+    "pdf_path": "maintenance-manuals/MM-BFP-010-boiler-feed-pump-maintenance.pdf"
+  },
+  {
+    "doc_id": "MM-CMP-011",
+    "title": "Centrifugal Compressor Maintenance Manual",
+    "path": "maintenance-manuals/MM-CMP-011-centrifugal-compressor-maintenance.pdf",
+    "doc_type": "maintenance_manual",
+    "assets": [
+      "Compressor C-201",
+      "Compressor C-202"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "SURGE",
+      "VIBRATION_HIGH",
+      "HIGH_DISCHARGE_TEMP"
+    ],
+    "revision": "2.5",
+    "effective_date": "2025-10-20",
+    "pdf_path": "maintenance-manuals/MM-CMP-011-centrifugal-compressor-maintenance.pdf"
+  },
+  {
+    "doc_id": "MM-MTR-012",
+    "title": "Critical Motor Maintenance Manual",
+    "path": "maintenance-manuals/MM-MTR-012-critical-motor-maintenance.pdf",
+    "doc_type": "maintenance_manual",
+    "assets": [
+      "Motor M-501",
+      "Motor M-502"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "MOTOR_TRIP",
+      "OVERCURRENT",
+      "HIGH_WINDING_TEMP",
+      "BEARING_TEMP_HIGH"
+    ],
+    "revision": "1.8",
+    "effective_date": "2025-12-05",
+    "pdf_path": "maintenance-manuals/MM-MTR-012-critical-motor-maintenance.pdf"
+  },
+  {
+    "doc_id": "TG-BFP-020",
+    "title": "Boiler Feed Pump Alarm Troubleshooting Guide",
+    "path": "troubleshooting-guides/TG-BFP-020-boiler-feed-pump-alarms.pdf",
+    "doc_type": "troubleshooting_guide",
+    "assets": [
+      "Boiler Feed Pump 101",
+      "Boiler Feed Pump 102"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "LOW_SUCTION_PRESSURE",
+      "HIGH_VIBRATION",
+      "SEAL_LEAK",
+      "MOTOR_OVERLOAD",
+      "RECURRING_ALARM"
+    ],
+    "revision": "3.0",
+    "effective_date": "2026-02-01",
+    "pdf_path": "troubleshooting-guides/TG-BFP-020-boiler-feed-pump-alarms.pdf"
+  },
+  {
+    "doc_id": "TG-CMP-021",
+    "title": "Compressor Discharge Pressure Alarm Troubleshooting Guide",
+    "path": "troubleshooting-guides/TG-CMP-021-compressor-discharge-pressure.pdf",
+    "doc_type": "troubleshooting_guide",
+    "assets": [
+      "Compressor C-201",
+      "Compressor C-202"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "LOW_SUCTION_PRESSURE",
+      "SURGE",
+      "RECURRING_ALARM"
+    ],
+    "revision": "2.3",
+    "effective_date": "2026-01-20",
+    "pdf_path": "troubleshooting-guides/TG-CMP-021-compressor-discharge-pressure.pdf"
+  },
+  {
+    "doc_id": "TG-MTR-022",
+    "title": "Motor Trip Alarm Troubleshooting Guide",
+    "path": "troubleshooting-guides/TG-MTR-022-motor-trip-alarms.pdf",
+    "doc_type": "troubleshooting_guide",
+    "assets": [
+      "Motor M-501",
+      "Motor M-502",
+      "Boiler Feed Pump Motor"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "MOTOR_TRIP",
+      "OVERCURRENT",
+      "GROUND_FAULT",
+      "RELATED_ASSETS"
+    ],
+    "revision": "1.6",
+    "effective_date": "2026-03-01",
+    "pdf_path": "troubleshooting-guides/TG-MTR-022-motor-trip-alarms.pdf"
+  },
+  {
+    "doc_id": "TG-PRI-023",
+    "title": "Alarm Priority and Escalation Troubleshooting Guide",
+    "path": "troubleshooting-guides/TG-PRI-023-alarm-priority-escalation.pdf",
+    "doc_type": "troubleshooting_guide",
+    "assets": [
+      "EastRefinery",
+      "All Critical Assets"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3",
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "CRITICAL",
+      "HIGH",
+      "PRIORITY_SCORE",
+      "FLOOD"
+    ],
+    "revision": "1.2",
+    "effective_date": "2025-11-15",
+    "pdf_path": "troubleshooting-guides/TG-PRI-023-alarm-priority-escalation.pdf"
+  },
+  {
+    "doc_id": "SI-GEN-030",
+    "title": "EastRefinery General Safety Instructions for Alarm Response",
+    "path": "safety-instructions/SI-GEN-030-alarm-response-safety.pdf",
+    "doc_type": "safety_instruction",
+    "assets": [
+      "EastRefinery"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3",
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "CRITICAL",
+      "HIGH",
+      "SAFETY_INTERLOCK",
+      "EMERGENCY"
+    ],
+    "revision": "5.1",
+    "effective_date": "2026-01-01",
+    "pdf_path": "safety-instructions/SI-GEN-030-alarm-response-safety.pdf"
+  },
+  {
+    "doc_id": "SI-BFP-031",
+    "title": "Boiler Feed Pump Safety Instructions",
+    "path": "safety-instructions/SI-BFP-031-boiler-feed-pump-safety.pdf",
+    "doc_type": "safety_instruction",
+    "assets": [
+      "Boiler Feed Pump 101",
+      "Boiler Feed Pump 102"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "SEAL_LEAK",
+      "HIGH_TEMPERATURE"
+    ],
+    "revision": "2.0",
+    "effective_date": "2025-12-15",
+    "pdf_path": "safety-instructions/SI-BFP-031-boiler-feed-pump-safety.pdf"
+  },
+  {
+    "doc_id": "SI-CMP-032",
+    "title": "Compressor System Safety Instructions",
+    "path": "safety-instructions/SI-CMP-032-compressor-safety.pdf",
+    "doc_type": "safety_instruction",
+    "assets": [
+      "Compressor C-201",
+      "Compressor C-202"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "SURGE",
+      "HIGH_DISCHARGE_TEMP"
+    ],
+    "revision": "1.9",
+    "effective_date": "2025-10-01",
+    "pdf_path": "safety-instructions/SI-CMP-032-compressor-safety.pdf"
+  },
+  {
+    "doc_id": "AP-ER-040",
+    "title": "EastRefinery Alarm Management Philosophy",
+    "path": "alarm-philosophy/AP-ER-040-eastrefinery-alarm-philosophy.pdf",
+    "doc_type": "alarm_philosophy",
+    "assets": [
+      "EastRefinery"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3",
+      "Unit 5"
+    ],
+    "alarm_tags": [
+      "CRITICAL",
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "RATIONALIZATION",
+      "PRIORITY_SCORE"
+    ],
+    "revision": "3.0",
+    "effective_date": "2025-07-01",
+    "pdf_path": "alarm-philosophy/AP-ER-040-eastrefinery-alarm-philosophy.pdf"
+  },
+  {
+    "doc_id": "KA-OPS-050",
+    "title": "Service Knowledge Article \u2014 Recurring BFP High Severity Alarms",
+    "path": "troubleshooting-guides/KA-OPS-050-recurring-bfp-high-severity.pdf",
+    "doc_type": "knowledge_article",
+    "assets": [
+      "Boiler Feed Pump 101",
+      "Boiler Feed Pump 102"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2",
+      "Unit 3"
+    ],
+    "alarm_tags": [
+      "HIGH_DISCHARGE_PRESSURE",
+      "HIGH_VIBRATION",
+      "RECURRING_ALARM",
+      "CRITICAL"
+    ],
+    "revision": "1.1",
+    "effective_date": "2026-04-12",
+    "pdf_path": "troubleshooting-guides/KA-OPS-050-recurring-bfp-high-severity.pdf"
+  },
+  {
+    "doc_id": "TEST-INJECT-999",
+    "title": "Prompt Injection Test Fixture",
+    "path": "troubleshooting-guides/TEST-INJECT-999-prompt-injection-fixture.pdf",
+    "doc_type": "test_fixture",
+    "assets": [
+      "Boiler Feed Pump 101"
+    ],
+    "site": "EastRefinery",
+    "units": [
+      "Unit 2"
+    ],
+    "alarm_tags": [
+      "PROMPT_INJECTION_TEST"
+    ],
+    "revision": "0.1",
+    "effective_date": "2026-01-01",
+    "trust_level": "untrusted",
+    "exclude_from_production_retrieval": true,
+    "pdf_path": "troubleshooting-guides/TEST-INJECT-999-prompt-injection-fixture.pdf"
+  }
+]

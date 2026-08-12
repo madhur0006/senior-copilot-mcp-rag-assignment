@@ -1,165 +1,179 @@
 # Alarm Investigation and Procedure Guidance Copilot
 
-Senior Software Engineer – Copilot Integration assignment (ABB).
+ABB Senior Software Engineer – Copilot Integration assignment.
 
-**Selected use case:** Alarm Investigation and Procedure Guidance Copilot
+Use case: investigate plant alarms with live API data (MCP) and procedure docs (RAG), then show the answer in a small Streamlit UI.
 
-## Main capabilities (target)
+## What it does
 
-- Natural-language alarm investigation
-- MCP tools over the Alarm Management API (asset search, alarms, metadata, correlation, priority, recommendations)
-- Document RAG over operating procedures, maintenance manuals, troubleshooting guides, and safety instructions
-- Combined MCP + RAG answers with citations and MCP execution trace
-- Web GUI for chat, alarm summary, citations, and tool traces
+- Take a natural language question (e.g. BFP-101 high severity alarms over 90 days)
+- Call Alarm Management API tools through an MCP server (not direct HTTP from the agent)
+- Pull matching procedure / safety / troubleshooting text from a local RAG index
+- Return an answer with citations plus an expandable MCP tool trace in the GUI
 
-## Technology stack (planned)
+## Stack
 
-| Layer | Choice |
+| Layer | What I used |
 |---|---|
-| Backend / orchestration | Python (FastAPI) |
-| Frontend GUI | React or Streamlit (finalized in implementation) |
-| MCP server | Python MCP SDK |
-| Alarm API | Supplied `alarm-management-api-simulator` |
-| RAG | PDF/Markdown ingestion + vector retrieval |
-| Packaging | Docker Compose |
-| CI | GitHub Actions |
+| Agent | Python + LangGraph (ReAct loop) |
+| GUI | Streamlit |
+| MCP | FastMCP under `mcp-servers/alarm-management` |
+| Alarm API | Provided simulator |
+| RAG | LangChain, OpenAI embeddings, Chroma on disk |
+| Chat model | `gpt-4o-mini` |
+| CI | GitHub Actions + pytest |
 
-## Repository layout (ABB guideline)
+## MCP tools
 
-```text
-.
-├── README.md
-├── docs/
-│   ├── architecture.md
-│   ├── architecture-diagram.png   # add diagram later
-│   ├── mcp-tool-catalog.md
-│   ├── rag-design.md
-│   ├── api-integration.md
-│   ├── design-decisions.md
-│   └── known-limitations.md
-├── apps/
-│   ├── backend/                   # copilot orchestration + MCP client
-│   └── frontend/                  # GUI
-├── mcp-servers/
-│   └── alarm-management/          # candidate-developed MCP server
-├── rag/
-│   ├── ingestion/
-│   ├── retrieval/
-│   ├── documents/                 # markdown corpus + metadata.json
-│   ├── documents-pdf/             # PDF corpus for PDF extraction demos
-│   └── tests/
-├── connectors/                    # Alarm API HTTP client, etc.
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-├── test-data/
-├── scripts/
-├── .github/workflows/ci.yml
-├── .env.example
-├── Dockerfile
-├── docker-compose.yml
-└── Makefile
-```
+Code: `mcp-servers/alarm-management/`
 
-Assignment brief files are also kept in this folder for reference:
+| Tool | Purpose |
+|---|---|
+| `search_assets` | Name / ID → asset |
+| `get_asset_metadata` | Metadata + related assets |
+| `get_alarms` | Filtered alarm list |
+| `get_recent_critical_alarms` | High/critical over N days |
+| `correlate_alarms` | Simple co-occurrence across assets |
+| `calculate_alarm_priority` | Priority score |
+| `get_operator_recommendations` | API recommended actions |
 
-- `Assignment_Use_Case.md`
-- `Submission_and_Evaluation_Guidelines.md`
-- `alarm-management-api-simulator/`
+Details and schemas: [docs/mcp-tool-catalog.md](docs/mcp-tool-catalog.md)
 
-## MCP server
-
-Location: `mcp-servers/alarm-management/` (to be implemented in Step 4).
-
-Planned tools:
-
-1. `search_assets`
-2. `get_asset_metadata`
-3. `get_alarms`
-4. `correlate_alarms`
-5. `calculate_alarm_priority`
-6. `get_operator_recommendations`
-
-## RAG corpus
-
-- Markdown: `rag/documents/`
-- PDF: `rag/documents-pdf/`
-- Metadata: `rag/documents/metadata.json`
-
-Ingestion and retrieval code will live under `rag/ingestion/` and `rag/retrieval/`.
-
-## Quick start (current status)
-
-### 1) Alarm API simulator
+Standalone server:
 
 ```bash
-cd alarm-management-api-simulator
-docker load -i alarm-api-simulator_latest.tar
-docker run -d \
-  --name alarm-api-simulator \
-  --platform linux/amd64 \
-  -e AUTH_ENABLED=true \
-  -p 8000:8000 \
-  alarm-api-simulator-alarm-api-simulator:latest
-
-curl http://localhost:8000/health
-curl -H "Authorization: Bearer demo-token" \
-  "http://localhost:8000/assets/search?query=Boiler%20Feed%20Pump%20101&limit=5"
+make simulator-up
+cd mcp-servers/alarm-management
+PYTHONPATH=../.. python3 server.py
 ```
 
-Swagger: http://localhost:8000/docs
+For the GUI demo the backend talks to the same server module in-process (`apps/backend/mcp_client.py`). That still goes through the MCP client/tool protocol; it just avoids standing up a separate port for local runs.
 
-### 2) Copilot stack
+## RAG
 
-Not implemented yet. Later:
+- PDFs used at ingest time: `rag/documents-pdf/` + `metadata.json`
+- Markdown copies for editing: `rag/documents/`
+- Index path: `rag/.index` (not committed; rebuild locally)
+- Embedding model: `text-embedding-3-small`
+
+```bash
+PYTHONPATH=. python3 -m rag.ingestion.pipeline
+```
+
+More detail: [docs/rag-design.md](docs/rag-design.md)
+
+## Quick start
 
 ```bash
 cp .env.example .env
-docker compose up --build
+# set OPENAI_API_KEY (and LLM_API_KEY if you use that alias)
+
+cd alarm-management-api-simulator
+docker load -i alarm-api-simulator_latest.tar   # first time
+cd ..
+make simulator-up
+
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+make ingest
+
+PYTHONPATH=. streamlit run apps/frontend/app.py
 ```
 
-## Configuration
+Checks:
 
-Copy `.env.example` to `.env`. Do not commit secrets.
+- API health: `curl http://localhost:8000/health`
+- Swagger: http://localhost:8000/docs
 
-## Test commands
+Optional CLI run: `make investigate`
+
+## Config
+
+Put secrets only in `.env` (gitignored). Main variables:
+
+| Variable | Notes |
+|---|---|
+| `ALARM_API_BASE_URL` | default `http://localhost:8000` |
+| `ALARM_API_TOKEN` | simulator uses `demo-token` |
+| `OPENAI_API_KEY` / `LLM_API_KEY` | needed for embed + chat |
+| `DOCUMENT_PDF_PATH` | PDF root |
+| `VECTOR_STORE_URL` | Chroma path |
+
+## Make targets
 
 ```bash
+make simulator-up
+make simulator-down
+make ingest
+make investigate
 make test
-# or later: pytest
+make coverage
 ```
 
-## Sample interaction (acceptance scenario)
+`docker compose up -d` starts the Alarm API simulator. MCP and Streamlit are started from Make / `PYTHONPATH` for the local demo (see Quick start).
 
-> Investigate recurring high-severity alarms for Boiler Feed Pump 101 over the last 90 days, identify likely contributing factors, retrieve the relevant operating procedure, and provide recommended actions with source evidence.
+## Tests
 
-## Architecture summary
+```bash
+make test-unit
+make test
+make coverage   # HTML under coverage/html/
+```
 
-User → GUI → Copilot backend → MCP client → Alarm Management MCP server → Alarm API  
-User question also triggers RAG retrieval over procedure/manual PDFs → grounded answer with citations + MCP trace.
+Covered today:
 
-See `docs/architecture.md`.
+- Unit tests for connector, MCP tools, RAG chunk/retrieve/grounding, and agent helpers
+- Integration tests against the live simulator / index when available
+- E2E investigation test combining MCP + RAG (mocked path runs in CI)
 
-## Assumptions
+CI (GitHub Actions) runs unit tests + the mocked MCP+RAG e2e on every push/PR and uploads coverage XML/HTML.
 
-- Alarm API token for local demo is `demo-token`
-- Apple Silicon hosts may need `--platform linux/amd64` (Rosetta) for the supplied simulator image
-- Synthetic corpus in `rag/documents*` is representative, not real plant IP
+## Example questions
 
-## Known limitations
+MCP + RAG:
 
-See `docs/known-limitations.md` (updated as implementation progresses).
+> Investigate recurring high-severity alarms for Boiler Feed Pump 101 over the last 90 days. Summarize the top alarms, then give recommended operator actions from OP-BFP-001 / SI-BFP-031 with section citations.
 
-## Implementation progress
+RAG only:
 
-- [x] Step 1: Alarm API simulator running
-- [x] Step 2: ABB repository skeleton + docs placeholders
-- [x] Step 3: Alarm API connector/client
-- [ ] Step 4: MCP server
-- [ ] Step 5: MCP client integration
-- [ ] Step 6: RAG ingestion/retrieval
-- [ ] Step 7: Combined orchestrator
-- [ ] Step 8: GUI
-- [ ] Step 9: Tests + CI
-- [ ] Step 10: Packaging, demo video, submission
+> What does OP-MTR-003 say about when restart is allowed after a motor trip? Cite the section.
+
+Another MCP + RAG case:
+
+> Why are high discharge-pressure alarms recurring on the centrifugal compressor? Pull recent critical alarms via MCP and recommend actions from TG-CMP-021 / OP-CMP-002 with section citations.
+
+## Architecture
+
+```text
+User → Streamlit → LangGraph agent
+         ├─ MCP client → MCP server → Alarm API
+         └─ search_procedures → Chroma / PDFs
+       → answer + citations + tool trace
+```
+
+- Diagram: [docs/architecture-diagram.png](docs/architecture-diagram.png)
+- Notes: [docs/architecture.md](docs/architecture.md)
+
+## Runtime notes
+
+- Simulator auth token: `demo-token` (when `AUTH_ENABLED=true`)
+- Apple Silicon: `make simulator-up` already uses `--platform linux/amd64`
+- `rag/documents*` are sample EastRefinery docs written for this assignment (not real plant IP)
+- Local run model: Compose = Alarm API; MCP + Streamlit via Make / `PYTHONPATH` (see [docs/known-limitations.md](docs/known-limitations.md))
+
+## Demo
+
+- Video: [video-explanation/abb-alarm-api-mcp-video.mp4](video-explanation/abb-alarm-api-mcp-video.mp4)
+- Architecture diagram: [docs/architecture-diagram.png](docs/architecture-diagram.png)
+
+## Layout
+
+```text
+apps/backend/                 agent, MCP client, tools
+apps/frontend/                Streamlit UI
+mcp-servers/alarm-management/ MCP server
+rag/                          ingest, retrieval, PDFs
+connectors/alarm_api/         HTTP client used by MCP
+tests/                        unit, integration, e2e
+docs/                         architecture, MCP catalog, RAG notes
+```

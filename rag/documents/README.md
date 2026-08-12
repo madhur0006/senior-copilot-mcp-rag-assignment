@@ -4,35 +4,27 @@ Synthetic but realistic EastRefinery documents for the **Alarm Investigation and
 
 ## Formats
 
-- Markdown source: `rag/documents/`
-- PDF corpus for RAG ingestion: `rag/documents-pdf/`
-
-Regenerate PDFs anytime:
-
-```bash
-.venv-rag/bin/python rag/scripts/md_to_pdf.py
-```
+- PDF corpus for RAG: `rag/documents-pdf/` (+ `metadata.json`)
+- Markdown sources (reference / editing): `rag/documents/`
 
 ## Folder layout
 
 ```text
 rag/
-├── documents/                 # Markdown sources + metadata.json
-│   ├── metadata.json
+├── documents/                 # Markdown sources (optional)
 │   ├── README.md
 │   ├── operating-procedures/
 │   ├── maintenance-manuals/
 │   ├── troubleshooting-guides/
 │   ├── safety-instructions/
 │   └── alarm-philosophy/
-├── documents-pdf/             # PDF versions (use these for PDF RAG)
-│   ├── operating-procedures/
-│   ├── maintenance-manuals/
-│   ├── troubleshooting-guides/
-│   ├── safety-instructions/
-│   └── alarm-philosophy/
-└── scripts/
-    └── md_to_pdf.py
+└── documents-pdf/             # PDF corpus used for RAG
+    ├── metadata.json          # machine-readable catalog
+    ├── operating-procedures/
+    ├── maintenance-manuals/
+    ├── troubleshooting-guides/
+    ├── safety-instructions/
+    └── alarm-philosophy/
 ```
 
 ## Documents included (15 production + 1 injection test fixture)
@@ -58,16 +50,19 @@ rag/
 
 ## Metadata
 
-`metadata.json` contains machine-readable fields for ingestion:
+Location: `rag/documents-pdf/metadata.json`
 
-- `doc_id`, `title`, `path` (markdown), `pdf_path`, `pdf_root_relative`
+Fields used for ingestion:
+
+- `doc_id`, `title`, `path` (PDF path relative to `documents-pdf/`)
+- `pdf_path`
 - `doc_type`, `assets`, `site`, `units`, `alarm_tags`
 - `revision`, `effective_date`
 
 ## Notes for RAG implementation
 
-1. Prefer ingesting PDFs from `rag/documents-pdf/` for PDF text-extraction demos.
-2. Keep markdown sources in `rag/documents/` for easy editing.
+1. Ingest PDFs from `rag/documents-pdf/` and join with `metadata.json`.
+2. Keep markdown sources in `rag/documents/` as readable reference; ingest uses PDFs only.
 3. Prefer section-aware chunking.
 4. Store citations as `doc_id` + section + source path.
 5. Filter on `assets`, `doc_type`, and `site` when the question names them.

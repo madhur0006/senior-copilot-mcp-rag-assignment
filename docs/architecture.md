@@ -1,31 +1,55 @@
 # Architecture
 
-## Use case
+## Overview
 
-Alarm Investigation and Procedure Guidance Copilot.
+This copilot answers alarm investigation questions by combining two sources in one run:
 
-## High-level components
+1. Live data from the Alarm Management API (through MCP)
+2. Procedure / manual text from a local RAG index
 
-1. **GUI** (`apps/frontend`) — chat, alarm summary, citations, MCP trace
-2. **Copilot orchestration** (`apps/backend`) — intent/planning, tool chaining, answer assembly
-3. **MCP client** (inside backend) — tool discovery and invocation
-4. **MCP server** (`mcp-servers/alarm-management`) — typed tools over Alarm API
-5. **Alarm Management API** (simulator or equivalent)
-6. **RAG ingestion** (`rag/ingestion`) — PDF/MD extract, chunk, embed, index
-7. **RAG retrieval** (`rag/retrieval`) — filtered search + citations
-8. **Connectors** (`connectors`) — HTTP clients, auth, retries, tracing
-9. **Observability** — request/conversation/trace IDs, tool timings, retrieval scores
-10. **Auth boundaries** — API token only inside MCP/connectors; never exposed in GUI responses
-
-## Request flow (target)
-
-1. User asks a natural-language question in the GUI.
-2. Backend plans steps and discovers MCP tools.
-3. MCP tools resolve asset → alarms → metadata → correlation/priority → recommendations.
-4. Backend retrieves procedure/manual passages via RAG.
-5. Backend compares API recommendations with document guidance.
-6. GUI shows grounded answer, citations, and expandable MCP trace.
+GUI is Streamlit. Orchestration is a LangGraph ReAct agent in `apps/backend`.
 
 ## Diagram
 
-Add `docs/architecture-diagram.png` in a later step showing MCP and RAG paths explicitly.
+![Architecture diagram](architecture-diagram.png)
+
+Left/blue side is the MCP path (GUI → agent → MCP client → MCP server → Alarm API).  
+Green side is RAG (`search_procedures` → Chroma / PDFs → citations).
+
+## Main pieces
+
+| Piece | Where | Notes |
+|---|---|---|
+| GUI | `apps/frontend` | Chat, alarm list, citations, tool trace expanders |
+| Agent | `apps/backend` | Decides which tools to call and writes the final answer |
+| MCP client | `apps/backend/mcp_client.py` | Discovers and calls MCP tools (in-process FastMCP client for local demos) |
+| MCP server | `mcp-servers/alarm-management` | Thin tools over the Alarm API |
+| Connector | `connectors/alarm_api` | httpx client: auth, retries, timeouts, error mapping |
+| Alarm API | Docker simulator on `:8000` | Assets, alarms, priority, recommendations, etc. |
+| Ingest | `rag/ingestion` | PDF load → chunk → embed → Chroma |
+| Retrieval | `rag/retrieval` | Filtered search + citations |
+| Secrets | `.env` | API token and OpenAI key stay out of the UI |
+
+## Typical request
+
+1. User asks something in Streamlit.
+2. Agent gets MCP tools + `search_procedures`.
+3. Common tool sequence for an investigation:
+   - `search_assets` to get `asset_id`
+   - `get_recent_critical_alarms` (or `get_alarms`)
+   - maybe one `get_operator_recommendations` call
+   - `search_procedures` for OP / SI / TG text
+4. Tool outputs stay in the agent message list.
+5. Model writes the answer with section citations.
+6. GUI shows answer, alarms, citations, and the raw-ish tool trace.
+
+## Rules I stuck to
+
+- Backend agent never imports the Alarm API client for live calls. Only MCP → connector does that.
+- Retrieved doc text is treated as data, not instructions (injection fixture is excluded from normal search).
+- Bearer token is not printed in GUI traces.
+
+## Persistence
+
+Chroma index lives under `VECTOR_STORE_URL` (default `./rag/.index`).  
+There is no chat database. Chat history in the UI is for display; each investigation starts a new agent run.

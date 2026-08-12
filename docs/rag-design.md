@@ -1,53 +1,81 @@
-# RAG Design
+# RAG design
 
-## Source document types
+## Documents
 
-- Operating procedures
-- Maintenance manuals
-- Troubleshooting guides
-- Safety instructions
-- Alarm philosophy
-- Service knowledge articles
+Ingested from `rag/documents-pdf/` (plus `metadata.json`). Markdown under `rag/documents/` is the editable source.
 
-Corpus locations:
+Types in the sample corpus:
 
-- Markdown: `rag/documents/`
-- PDF: `rag/documents-pdf/`
-- Metadata: `rag/documents/metadata.json`
+- Operating procedures (`OP-*`)
+- Maintenance manuals (`MM-*`)
+- Troubleshooting guides (`TG-*`, `KA-*`)
+- Safety instructions (`SI-*`)
+- Alarm philosophy (`AP-*`)
+- Injection test fixture (`TEST-INJECT-999`) – not used in normal search
 
-## Ingestion flow (planned)
+Metadata fields include `doc_id`, title, type, assets, site, units, alarm tags, pdf path.
 
-1. Load files from `DOCUMENT_PATH` / `DOCUMENT_PDF_PATH`
-2. Extract text (PDF text extraction or Markdown parse)
-3. Chunk by section headings where possible
-4. Attach metadata (`doc_id`, `doc_type`, `assets`, `site`, `section`, `revision`)
-5. Embed chunks
-6. Upsert into vector index
+## Ingest pipeline
 
-## Chunking strategy
+```text
+metadata.json + PDFs
+  → load_documents()     # PyMuPDF + join metadata
+  → chunk_documents()    # split on numbered sections when possible
+  → build_index()        # OpenAI embed → Chroma
+```
 
-Prefer section-aware chunks on `##` / `###` boundaries, with overlap for long sections.
+```bash
+PYTHONPATH=. python3 -m rag.ingestion.pipeline
+# same as: make ingest
+```
 
-## Embedding / retrieval
+Rebuild after changing PDFs, metadata, or embedding model.
 
-To be selected in Step 6 (for example local embeddings + Chroma/FAISS, or a hosted embedding API).
+## Extraction / chunking
+
+Pages come from LangChain `PyMuPDFLoader`. Chunking prefers headings like `8.1 High vibration` so tables stay with their section. Very long sections fall back to a recursive text splitter.
+
+Chunk metadata usually carries `doc_id`, section, site, assets, source path, etc.
+
+## Embeddings and store
+
+- OpenAI `text-embedding-3-small`
+- Chroma collection `alarm_rag` under `./rag/.index` by default
+- Persistent client is created in code on purpose (avoids hitting port 8000 as an HTTP Chroma server)
+
+No hybrid search / reranker in this version – plain vector similarity. The agent tool also prefers non-Introduction sections when it can.
 
 ## Filters
 
-Support filters on `assets`, `doc_type`, `site`, and exclude `TEST-INJECT-999` from production retrieval.
+`site`, `doc_type`, `doc_id`, and equipment name (`asset`) are supported.  
+Alarm API ids such as `AST00001` are not in doc metadata, so the RAG tool ignores those as asset filters.
 
-## Citations
+`TEST-INJECT-999` is filtered out of normal retrieval.
 
-Return `doc_id`, title, section, source path, and short excerpt.
+## Citations and weak evidence
 
-## Low-confidence handling
+`citations.py` builds `doc_id`, section, path, excerpt, score.  
+`retrieve_detailed` sets confidence to high / low / none. If evidence is weak, the grounded helper says so instead of inventing steps.
 
-If top score is below threshold or no hits, say evidence is insufficient instead of inventing procedure steps.
+## Prompt injection
 
-## Prompt-injection protections
+- Fixture doc excluded by default
+- Prompts tell the model that excerpts are untrusted data
+- Unit tests cover the hostile fixture case
 
-Treat retrieved text as untrusted. Never follow instructions embedded in documents. Use `TEST-INJECT-999` only in dedicated tests.
+## Refresh steps
 
-## Index refresh
+1. Update PDFs under `rag/documents-pdf/` (and `metadata.json` if paths/ids change)
+2. Re-run ingest
+3. Optional smoke: `PYTHONPATH=. python3 -m rag.retrieval.grounded`
 
-Re-run ingestion script after corpus changes. Document command here after Step 6.
+## Example citation
+
+```json
+{
+  "doc_id": "OP-BFP-001",
+  "section": "8.1 High or critical discharge pressure",
+  "source_path": "operating-procedures/OP-BFP-001-boiler-feed-pump-operation.pdf",
+  "excerpt": "Acknowledge the alarm and note the time..."
+}
+```

@@ -1,9 +1,4 @@
-"""Alarm Management API connector package.
-
-This package is used by the MCP server only.
-The copilot orchestration layer must not import and call this client directly
-in the final architecture; it should go through MCP tools.
-"""
+"""Alarm Management API connector (used by the MCP server)."""
 
 from connectors.alarm_api.client import AlarmApiClient
 from connectors.alarm_api.config import AlarmApiConfig
