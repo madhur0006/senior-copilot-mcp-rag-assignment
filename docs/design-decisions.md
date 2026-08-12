@@ -15,17 +15,17 @@ Short notes on why things are wired the way they are.
 9. **Context size** – Tool results are compacted before they go back to the model. Full alarm dumps were blowing the context window.
 10. **Simulator image** – Large `.tar` is gitignored. Compose starts the API; GUI/MCP are started with Make / `PYTHONPATH`.
 
-## Things I considered and skipped
+## Alternatives I rejected
 
 | Idea | Why not |
 |---|---|
 | FastAPI + React UI | More moving parts for little demo gain |
-| HTTP-only MCP process for every local run | Extra process to manage; in-process client was enough for the assignment demo |
+| Extra HTTP MCP process for every local run | Extra process to manage; in-process client was enough for the assignment demo |
 | Google + OpenAI embeddings | Two providers, more config |
 | Hosted vector DB | Extra account/dependency for reviewers |
 
 ## Security / safety notes
 
-- `.env` is ignored; `.env.example` has placeholders.
+- `.env` is ignored; `.env.example` shows the required variable names.
 - `TEST-INJECT-999` is kept out of normal retrieval; prompts say retrieved text is untrusted.
 - No ticket/write tools are hooked up for unsupervised writes.
