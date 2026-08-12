@@ -110,16 +110,23 @@ make test
 make coverage
 ```
 
-`docker compose up -d` currently starts the Alarm API only.
+`docker compose up -d` starts the Alarm API simulator. MCP and Streamlit are started from Make / `PYTHONPATH` for the local demo (see Quick start).
 
 ## Tests
 
 ```bash
+make test-unit
 make test
 make coverage   # HTML under coverage/html/
 ```
 
-Live integration tests skip if the simulator or index is missing. CI runs unit tests + a mocked MCP+RAG e2e and uploads coverage.
+Covered today:
+
+- Unit tests for connector, MCP tools, RAG chunk/retrieve/grounding, and agent helpers
+- Integration tests against the live simulator / index when available
+- E2E investigation test combining MCP + RAG (mocked path runs in CI)
+
+CI (GitHub Actions) runs unit tests + the mocked MCP+RAG e2e on every push/PR and uploads coverage XML/HTML.
 
 ## Example questions
 
@@ -147,12 +154,12 @@ User → Streamlit → LangGraph agent
 - Diagram: [docs/architecture-diagram.png](docs/architecture-diagram.png)
 - Notes: [docs/architecture.md](docs/architecture.md)
 
-## Assumptions / limits
+## Runtime notes
 
-- Simulator token is `demo-token` when auth is on
-- On Apple Silicon the simulator image usually needs `--platform linux/amd64`
-- Docs in `rag/documents*` are sample / synthetic, not real plant IP
-- Compose does not yet bring up MCP + Streamlit in one command (see [docs/known-limitations.md](docs/known-limitations.md))
+- Simulator auth token: `demo-token` (when `AUTH_ENABLED=true`)
+- Apple Silicon: `make simulator-up` already uses `--platform linux/amd64`
+- `rag/documents*` are sample EastRefinery docs written for this assignment (not real plant IP)
+- Local run model: Compose = Alarm API; MCP + Streamlit via Make / `PYTHONPATH` (see [docs/known-limitations.md](docs/known-limitations.md))
 
 ## Demo
 
