@@ -1,4 +1,4 @@
-# Alarm Investigation and Procedure Guidance Copilot
+# Alarm Investigation and Procedure Guidance Copilot Using MCP and RAG
 
 ABB Senior Software Engineer – Copilot Integration assignment.
 
